@@ -8,8 +8,8 @@
     background: 
       linear-gradient(135deg, rgba(9, 15, 28, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%),
       linear-gradient(45deg, #020617 0%, #1e3a8a 50%, #0c4a6e 100%);
-    background-attachment: fixed;
     min-height: 100vh;
+    margin-top: 2rem;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -23,10 +23,23 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: 
-      radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 50% 50%, rgba(94, 234, 212, 0.05) 0%, transparent 50%);
+    background:
+    radial-gradient(circle at 10% 20%, rgba(56, 191, 248, 0.158) 0%, transparent 80%),
+    radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(94, 234, 212, 0.05) 0%, transparent 50%),
+    linear-gradient(to right, 
+      rgba(0, 0, 0, 0.8) 0%, 
+      transparent 30%, 
+      transparent 70%, 
+      rgba(0, 0, 0, 0.8) 100%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 2px,
+      transparent 6px
+    );
+    background-blend-mode: overlay;  
     pointer-events: none;
     z-index: 0;
   }
@@ -35,24 +48,11 @@
     position: relative;
     z-index: 1;
   }
-
-  @keyframes gradient {
-    0% { background-position: 0% 50%; }
-    25% { background-position: 100% 50%; }
-    50% { background-position: 50% 100%; }
-    75% { background-position: 0% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  .animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient 8s ease infinite;
-  }
 }
 
 @layer components {
   .glass-button {
-    @apply transition-all duration-300 hover:shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:bg-opacity-90 active:transform active:scale-95;
+    @apply transition-all duration-300 hover:shadow-[0_0_10px_rgba(56,189,248,0.3)] hover:bg-opacity-90 active:transform active:scale-95;
   }
   
   .glass-input {
@@ -69,6 +69,23 @@
 
   header {
     @apply transition-all duration-300;
-    background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.7) 100%);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.16) 0%, rgba(15, 23, 42, 0.16) 100%);
+  } 
+}
+
+@layer base {
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 1s ease-out forwards;
   }
 }

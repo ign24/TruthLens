@@ -1,36 +1,74 @@
 import { ref } from 'vue';
+import { getApiUrl, checkApiHealth } from '../config/api';
 
 interface AnalysisResult {
-  factualAccuracy: number;
-  bias: 'left' | 'right' | 'neutral';
-  emotionalLevel: string;
+  factual_accuracy: number;
+  bias: string;
+  emotional_tone: string;
   recommendation: string;
+  analysis_explanation?: string;
 }
+
+console.log('Using backend: https://truthlens-backend-production.up.railway.app');
 
 export function useAnalysis() {
   const result = ref<AnalysisResult | null>(null);
+  const isApiHealthy = ref(true);
 
-  const analyzeContent = async (text: string) => {
-    // Simulate API call
-    return new Promise<AnalysisResult>((resolve) => {
-      setTimeout(() => {
-        resolve({
-          factualAccuracy: Math.floor(Math.random() * 30) + 70, // 70-100
-          bias: ['left', 'right', 'neutral'][Math.floor(Math.random() * 3)] as 'left' | 'right' | 'neutral',
-          emotionalLevel: ['Neutral', 'Slightly emotional', 'Highly emotional', 'Alarmist'][Math.floor(Math.random() * 4)],
-          recommendation: [
-            'Well-argued and balanced perspective',
-            'Consider checking additional sources',
-            'Exercise caution - emotional language detected',
-            'Recommended to verify claims independently'
-          ][Math.floor(Math.random() * 4)]
-        });
-      }, 2000);
+  const analyzeContent = async (text: string): Promise<AnalysisResult> => {
+    // Check API health before sending request
+    if (!isApiHealthy.value) {
+      isApiHealthy.value = await checkApiHealth();
+      if (!isApiHealthy.value) {
+        throw new Error('El servidor no está disponible. Por favor, intenta más tarde.');
+      }
+    }
+
+    console.log('Sending analysis request to:', getApiUrl('ANALYZE'));
+    
+    const response = await fetch(getApiUrl('ANALYZE'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input_text: text })
     });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('Analysis error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData
+      });
+
+      // Handle specific error cases
+      if (response.status === 404) {
+        throw new Error('El endpoint de análisis no está disponible. Por favor, verifica la configuración del servidor.');
+      } else if (response.status === 503) {
+        isApiHealthy.value = false;
+        throw new Error('El servidor está temporalmente no disponible. Por favor, intenta más tarde.');
+      } else {
+        throw new Error(`Error en el análisis: ${response.status} ${response.statusText}`);
+      }
+    }
+
+    const data = await response.json();
+    console.log('Analysis response:', data);
+
+    const formatted: AnalysisResult = {
+      factual_accuracy: data.factual_accuracy,
+      bias: data.bias,
+      emotional_tone: data.emotional_tone,
+      recommendation: data.recommendation,
+      analysis_explanation: JSON.stringify(data)
+    };
+
+    result.value = formatted;
+    return formatted;
   };
 
   return {
     result,
-    analyzeContent
+    analyzeContent,
+    isApiHealthy
   };
 }

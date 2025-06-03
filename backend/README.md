@@ -1,28 +1,35 @@
 # TruthLens Backend
 
-This is the FastAPI backend for the TruthLens application, which analyzes news articles for bias and factual accuracy.
+## Configuración del Entorno
 
-## Setup
+### Opción 1: Usando el script de inicio (Recomendado)
+1. Simplemente haz doble clic en `start_server.bat`
+2. El servidor se iniciará automáticamente en el puerto 5000
 
-1. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+### Opción 2: Activación manual del entorno virtual
+1. Abre una terminal en la carpeta `backend`
+2. Activa el entorno virtual:
+   ```bash
+   # En Windows:
+   .\venv\Scripts\activate
+   
+   # En Unix/MacOS:
+   source venv/bin/activate
+   ```
+3. Inicia el servidor:
+   ```bash
+   python main.py
+   ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+## Verificación
+- El servidor estará disponible en: http://localhost:5000
+- La documentación de la API estará en: http://localhost:5000/docs
+- El endpoint de salud estará en: http://localhost:5000/api/v1/health
 
-## Running the Application
-
-To run the development server:
-```bash
-uvicorn main:app --reload
-```
-
-The API will be available at `http://localhost:8000`
+## Notas
+- Asegúrate de tener un archivo `.env` con las variables necesarias
+- El servidor debe estar en ejecución para que el frontend funcione correctamente
+- Si ves errores de conexión, verifica que el servidor esté corriendo en el puerto 5000
 
 ## API Documentation
 
