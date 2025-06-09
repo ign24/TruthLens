@@ -1,6 +1,7 @@
 <template>
+    <!-- Container for article type and sentiment analysis details -->
     <div class="space-y-6">
-        <!-- Article Type Analysis -->
+        <!-- Article Type Analysis Section -->
         <div v-if="articleType" class="space-y-3">
             <h3 class="text-lg font-semibold text-blue-300">Article Type Distribution</h3>
             <div class="space-y-2">
@@ -11,6 +12,7 @@
                         <span class="text-sm text-slate-300 capitalize">{{ type }}</span>
                         <span class="text-sm text-slate-400">{{ (value * 100).toFixed(0) }}%</span>
                     </div>
+                    <!-- Progress bar for article type -->
                     <div class="h-2 w-full rounded-full bg-slate-800/20 overflow-hidden">
                         <div class="h-full rounded-full transition-all duration-500"
                              :class="getColor(type, 'gradient')"
@@ -21,7 +23,7 @@
             </div>
         </div>
 
-        <!-- Sentiments Analysis -->
+        <!-- Sentiments Analysis Section -->
         <div v-if="sentiments" class="space-y-3">
             <h3 class="text-lg font-semibold text-blue-300">Emotional Analysis</h3>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -30,6 +32,7 @@
                      class="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-800/20 border border-white/5
                             hover:border-white/10 transition-all duration-300">
                     <span class="text-sm font-medium text-slate-200 capitalize">{{ emotion }}</span>
+                    <!-- Progress bar for sentiment -->
                     <div class="w-full h-1.5 rounded-full bg-slate-800/20 overflow-hidden">
                         <div class="h-full rounded-full transition-all duration-500"
                              :class="getColor(emotion, 'gradient')"

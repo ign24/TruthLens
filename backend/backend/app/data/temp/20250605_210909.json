@@ -1,0 +1,56 @@
+{
+  "text": "Amid rising tensions, government officials warn that the recent surge in immigration poses a \"serious threat to national stability.\" Meanwhile, independent reports suggest the influx has had a neutral or even positive economic impact. A viral video showing a confrontation at the border has sparked outrage online, though fact-checkers later revealed it was taken out of context. Experts urge the public to avoid jumping to conclusions and await verified information.",
+  "analysis": {
+    "factual_accuracy": 70,
+    "bias": "neutral",
+    "emotional_tone": "mixed",
+    "recommendation": "Readers should consider seeking out additional sources, particularly on the economic impact of immigration and the context of the viral video, to form a more rounded understanding.",
+    "analysis_explanation": {
+      "factual_accuracy": {
+        "score": 70,
+        "key_indicators": "Based on the analysis of factual claims and verifiable information",
+        "examples_from_text": "See highlights for specific examples",
+        "weight_of_factors": "Considers source reliability, claim verifiability, and evidence quality",
+        "comparison_with_similar_content": "Compared against standard journalistic practices"
+      },
+      "bias": {
+        "classification": "neutral",
+        "language_patterns": "Analyzed through word choice, framing, and source selection",
+        "examples_of_bias": "See highlights for specific examples",
+        "context_and_implications": "Considered in relation to the topic and audience",
+        "effect_on_message": "Evaluated impact on overall message clarity"
+      },
+      "emotional_tone": {
+        "classification": "mixed",
+        "emotional_language_patterns": "Analyzed through sentiment scores and emotional triggers",
+        "examples_of_emotional_language": "See highlights for specific examples",
+        "impact_on_message": "Evaluated effect on message delivery",
+        "effect_on_credibility": "Assessed impact on perceived reliability"
+      },
+      "recommendation": {
+        "text": "Readers should consider seeking out additional sources, particularly on the economic impact of immigration and the context of the viral video, to form a more rounded understanding.",
+        "key_factors": "Based on factual accuracy, bias, and emotional tone",
+        "specific_concerns": "See highlights for specific concerns",
+        "relation_to_other_classifications": "Integrated analysis of all factors"
+      }
+    },
+    "article_type": {
+      "objective": 0.6,
+      "subjective": 0.3,
+      "speculative": 0.1,
+      "emotive": 0.2,
+      "clickbait": 0.1
+    },
+    "sentiments": {
+      "joy": 0.1,
+      "trust": 0.3,
+      "fear": 0.4,
+      "surprise": 0.2,
+      "sadness": 0.2,
+      "disgust": 0.1,
+      "anger": 0.3,
+      "anticipation": 0.2
+    }
+  },
+  "timestamp": "2025-06-05T21:09:09.815067"
+}

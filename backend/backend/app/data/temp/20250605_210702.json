@@ -1,0 +1,56 @@
+{
+  "text": "You won’t believe what scientists just discovered about coffee! The shocking truth they don’t want you to know is right here. Click before it’s taken down…",
+  "analysis": {
+    "factual_accuracy": 0,
+    "bias": "other",
+    "emotional_tone": "negative",
+    "recommendation": "This text lacks factual information and uses sensational language to provoke curiosity and concern without providing substance. It is recommended to seek information from reputable sources with clear evidence and data supporting their claims.",
+    "analysis_explanation": {
+      "factual_accuracy": {
+        "score": 0,
+        "key_indicators": "Based on the analysis of factual claims and verifiable information",
+        "examples_from_text": "See highlights for specific examples",
+        "weight_of_factors": "Considers source reliability, claim verifiability, and evidence quality",
+        "comparison_with_similar_content": "Compared against standard journalistic practices"
+      },
+      "bias": {
+        "classification": "other",
+        "language_patterns": "Analyzed through word choice, framing, and source selection",
+        "examples_of_bias": "See highlights for specific examples",
+        "context_and_implications": "Considered in relation to the topic and audience",
+        "effect_on_message": "Evaluated impact on overall message clarity"
+      },
+      "emotional_tone": {
+        "classification": "negative",
+        "emotional_language_patterns": "Analyzed through sentiment scores and emotional triggers",
+        "examples_of_emotional_language": "See highlights for specific examples",
+        "impact_on_message": "Evaluated effect on message delivery",
+        "effect_on_credibility": "Assessed impact on perceived reliability"
+      },
+      "recommendation": {
+        "text": "This text lacks factual information and uses sensational language to provoke curiosity and concern without providing substance. It is recommended to seek information from reputable sources with clear evidence and data supporting their claims.",
+        "key_factors": "Based on factual accuracy, bias, and emotional tone",
+        "specific_concerns": "See highlights for specific concerns",
+        "relation_to_other_classifications": "Integrated analysis of all factors"
+      }
+    },
+    "article_type": {
+      "objective": 0.0,
+      "subjective": 0.2,
+      "speculative": 0.8,
+      "emotive": 0.9,
+      "clickbait": 1.0
+    },
+    "sentiments": {
+      "joy": 0.0,
+      "trust": 0.0,
+      "fear": 0.8,
+      "surprise": 0.7,
+      "sadness": 0.0,
+      "disgust": 0.0,
+      "anger": 0.0,
+      "anticipation": 0.5
+    }
+  },
+  "timestamp": "2025-06-05T21:07:02.464232"
+}

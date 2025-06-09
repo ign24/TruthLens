@@ -11,6 +11,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/translator',
     name: 'translator',
     component: () => import('../views/TranslatorView.vue')
+  },
+  {
+    path: '/voice-chat',
+    name: 'voice-chat',
+    component: () => import('../views/VoiceAssistant.vue')
   }
 ]
 

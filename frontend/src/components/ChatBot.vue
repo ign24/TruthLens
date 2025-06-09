@@ -427,7 +427,7 @@ function linkify(text) {
 </script>
 
 <template>
-  <div :class="[isOpen ? 'fixed bottom-4 z-10': 'fixed bottom-4 right-4 z-30']">
+  <div :class="[isOpen ? 'fixed bottom-4 z-30' : 'fixed bottom-4 right-4 z-5']">
     <!-- Toggle Button -->
     <button
       v-if="!isOpen"
@@ -555,7 +555,7 @@ function linkify(text) {
               v-model="userInput"
               type="text"
               placeholder="Type your message or question here..."
-              class="flex-1 bg-slate-800/80 text-white rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-cyan-400/50 border border-cyan-400/20 placeholder-blue-200/60 transition-all duration-300 hover:border-cyan-400/40 h-12 shadow-sm"
+              class="flex-1 bg-slate-800/80 text-white rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-1 focus:ring-cyan-400/40 border border-cyan-400/15 placeholder-blue-200/60 transition-all duration-200 hover:border-cyan-400/25 h-12 shadow-sm chat-input"
               :disabled="isLoading"
               @focus="handleInputFocus"
               aria-label="Message"
@@ -569,8 +569,8 @@ function linkify(text) {
                 aria-label="Send message"
                 title="Send"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"/>
                 </svg>
                 <span class="text-xs mt-1 block md:hidden">Send</span>
               </button>
@@ -812,7 +812,7 @@ button:active {
 
 /* Mobile-specific styles */
 @media (max-width: 768px) {
-  /* Chat window ocupa toda la pantalla */
+  /* Chat window ocupa toda la pantalla - ELIMINAR */
   .w-full.h-full.md\:w-\[450px\].md\:h-\[600px\].md\:bottom-8.md\:right-8.md\:fixed {
     width: 100vw !important;
     max-width: 100vw !important;
@@ -829,7 +829,7 @@ button:active {
     z-index: 1050 !important;
   }
 
-  /* Asegurar que el contenedor principal también ocupe toda la pantalla y tenga z-index alto */
+  /* Contenedor principal ocupa toda la pantalla y z-index alto - ELIMINAR */
   .fixed.bottom-4.z-10,
   .fixed.bottom-4.right-4.z-30 {
     width: 100vw !important;
@@ -1355,5 +1355,40 @@ input {
   overflow-wrap: anywhere;
   font-size: 0.97em;
   color: #a5b4fc;
+}
+
+/* Refined chat input styles */
+.chat-input {
+  transition: all 0.2s ease;
+  background: rgba(30, 41, 59, 0.95);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.chat-input:focus {
+  background: rgba(30, 41, 59, 0.98);
+  border-color: rgba(56, 189, 248, 0.3);
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.15),
+    0 0 0 2px rgba(56, 189, 248, 0.15);
+}
+
+.chat-input:hover:not(:focus) {
+  border-color: rgba(56, 189, 248, 0.25);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile optimizations for chat input */
+@media (max-width: 768px) {
+  .chat-input {
+    font-size: 0.95rem;
+    padding: 0.85rem 1rem;
+    border-radius: 1rem;
+  }
+  
+  .chat-input:focus {
+    box-shadow: 
+      inset 0 1px 2px rgba(0, 0, 0, 0.15),
+      0 0 0 2px rgba(56, 189, 248, 0.12);
+  }
 }
 </style> 

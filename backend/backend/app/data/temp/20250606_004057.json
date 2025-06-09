@@ -1,0 +1,56 @@
+{
+  "text": "Amid rising tensions, government officials warn that the recent surge in immigration poses a \"serious threat to national stability.\" Meanwhile, independent reports suggest the influx has had a neutral or even positive economic impact. A viral video showing a confrontation at the border has sparked outrage online, though fact-checkers later revealed it was taken out of context. Experts urge the public to avoid jumping to conclusions and await verified information.",
+  "analysis": {
+    "factual_accuracy": 75,
+    "bias": "neutral",
+    "emotional_tone": "mixed",
+    "recommendation": "Readers are advised to seek further context when encountering reports on complex issues like immigration. It's important to consider multiple sources, especially given the contrasting views on the economic impact and the potential for misleading content, such as the out-of-context video.",
+    "analysis_explanation": {
+      "factual_accuracy": {
+        "score": 75,
+        "key_indicators": "Presence of independent reports, fact-checking of viral content, and expert opinions.",
+        "examples_from_text": "Independent reports on economic impact, fact-checkers debunking misleading video.",
+        "weight_of_factors": "The inclusion of both government warnings and independent reports adds to factual accuracy, but without specific data, accuracy can't be rated higher.",
+        "comparison_with_similar_content": "Similar reports often lack the balance of perspectives found in this text, leading to a higher score in factual accuracy."
+      },
+      "bias": {
+        "classification": "neutral",
+        "language_patterns": "The text balances governmental warnings with independent reports and expert advice, without pushing a narrative.",
+        "examples_of_bias": "",
+        "context_and_implications": "The balance of perspectives suggests an attempt to present information without swaying the reader towards a particular viewpoint.",
+        "effect_on_message": "This neutrality helps in delivering a more factual and less polarized view on immigration issues."
+      },
+      "emotional_tone": {
+        "classification": "mixed",
+        "emotional_language_patterns": "References to 'rising tensions', 'serious threat', and 'outrage online' contribute to a mixed emotional tone.",
+        "examples_of_emotional_language": "'Serious threat to national stability', 'sparked outrage online'.",
+        "impact_on_message": "The mix of fear, urgency, and calls for calm can affect readers differently, depending on their pre-existing views on immigration.",
+        "effect_on_credibility": "This mixed tone might challenge the credibility for some readers, as emotions can be seen as undermining objectivity."
+      },
+      "recommendation": {
+        "text": "Readers are advised to seek further context when encountering reports on complex issues like immigration.",
+        "key_factors": "The need for balance, the potential for out-of-context content, and the importance of considering multiple sources.",
+        "specific_concerns": "Given the complex nature of immigration and its impact, relying on a single source or perspective can be misleading.",
+        "relation_to_other_classifications": "This recommendation aligns with the neutral bias and mixed emotional tone, urging a comprehensive view."
+      }
+    },
+    "article_type": {
+      "objective": 0.6,
+      "subjective": 0.4,
+      "speculative": 0.2,
+      "emotive": 0.3,
+      "clickbait": 0.1
+    },
+    "sentiments": {
+      "joy": 0.0,
+      "trust": 0.2,
+      "fear": 0.5,
+      "surprise": 0.2,
+      "sadness": 0.3,
+      "disgust": 0.1,
+      "anger": 0.4,
+      "anticipation": 0.3
+    }
+  },
+  "timestamp": "2025-06-06T00:40:57.991136"
+}

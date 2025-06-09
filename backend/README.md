@@ -1,35 +1,35 @@
 # TruthLens Backend
 
-## Configuración del Entorno
+## Environment Setup
 
-### Opción 1: Usando el script de inicio (Recomendado)
-1. Simplemente haz doble clic en `start_server.bat`
-2. El servidor se iniciará automáticamente en el puerto 5000
+### Option 1: Using the startup script (Recommended)
+1. Simply double-click on `start_server.bat`
+2. The server will start automatically on port 5000
 
-### Opción 2: Activación manual del entorno virtual
-1. Abre una terminal en la carpeta `backend`
-2. Activa el entorno virtual:
+### Option 2: Manual virtual environment activation
+1. Open a terminal in the `backend` folder
+2. Activate the virtual environment:
    ```bash
-   # En Windows:
+   # On Windows:
    .\venv\Scripts\activate
    
-   # En Unix/MacOS:
+   # On Unix/MacOS:
    source venv/bin/activate
    ```
-3. Inicia el servidor:
+3. Start the server:
    ```bash
    python main.py
    ```
 
-## Verificación
-- El servidor estará disponible en: http://localhost:5000
-- La documentación de la API estará en: http://localhost:5000/docs
-- El endpoint de salud estará en: http://localhost:5000/api/v1/health
+## Verification
+- The server will be available at: http://localhost:5000
+- API documentation will be at: http://localhost:5000/docs
+- Health endpoint will be at: http://localhost:5000/api/v1/health
 
-## Notas
-- Asegúrate de tener un archivo `.env` con las variables necesarias
-- El servidor debe estar en ejecución para que el frontend funcione correctamente
-- Si ves errores de conexión, verifica que el servidor esté corriendo en el puerto 5000
+## Notes
+- Make sure you have a `.env` file with the necessary variables
+- The server must be running for the frontend to work properly
+- If you see connection errors, verify that the server is running on port 5000
 
 ## API Documentation
 

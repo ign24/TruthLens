@@ -29,7 +29,7 @@ export function useAnalysis() {
     const response = await fetch(getApiUrl('ANALYZE'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input_text: text })
+      body: JSON.stringify({ text })
     });
 
     if (!response.ok) {

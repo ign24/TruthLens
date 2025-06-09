@@ -1,4 +1,5 @@
 <template>
+  <!-- Tooltip container for displaying contextual information on hover or focus -->
   <div class="tooltip-container" ref="tooltipRef">
     <slot></slot>
     <Transition
@@ -9,6 +10,7 @@
       leave-from-class="transform scale-100 opacity-100"
       leave-to-class="transform scale-95 opacity-0"
     >
+      <!-- Tooltip content shown when isVisible is true -->
       <div
         v-if="isVisible"
         class="tooltip-content"
@@ -21,7 +23,9 @@
         role="tooltip"
         :aria-hidden="!isVisible"
       >
+        <!-- Arrow for desktop tooltips -->
         <div v-if="!isMobile" class="tooltip-arrow" :class="position"></div>
+        <!-- Tooltip text -->
         <div class="tooltip-inner">
           {{ text }}
         </div>

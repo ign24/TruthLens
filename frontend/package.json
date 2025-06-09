@@ -12,6 +12,8 @@
     "@types/marked": "^5.0.2",
     "@vueuse/core": "^10.7.2",
     "marked": "^15.0.12",
+    "simplebar": "^6.3.1",
+    "simplebar-vue": "^2.4.1",
     "vue": "^3.5.10"
   },
   "devDependencies": {

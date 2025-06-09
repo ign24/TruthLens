@@ -1,14 +1,16 @@
 import os
 from dotenv import load_dotenv
+from pathlib import Path
+
+# Cargar el .env desde la carpeta backend
+load_dotenv(str(Path(__file__).resolve().parent / ".env"))
 
 def check_env_vars():
-    # Cargar variables del .env
-    load_dotenv()
-    
     # Lista de variables requeridas (solo las claves de API)
     required_vars = [
         "OPENAI_API_KEY",
-        "SERPER_API_KEY"
+        "SERPER_API_KEY",
+        "ELEVENLABS_API_KEY"
     ]
     
     print("=== Verificación de variables de entorno ===")

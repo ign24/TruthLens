@@ -14,7 +14,7 @@ async function handleAnalyze(text: string) {
 </script>
 
 <template>
-  <div class="pt-24 pb-4 px-4 text-white relative mb-3">
+  <div class="pt-[140px] pb-4 px-4 text-white relative mb-3">
     <div>
       <div class="text-center mb-6">
         <h1 class="font-display text-6xl font-bold mb-6 relative">

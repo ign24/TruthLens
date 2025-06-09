@@ -8,3 +8,6 @@ slowapi==0.1.8
 python-multipart==0.0.9
 newspaper3k>=0.2.8
 lxml[html_clean]>=5.1.0
+elevenlabs
+aiohttp==3.9.3
+websockets==12.0

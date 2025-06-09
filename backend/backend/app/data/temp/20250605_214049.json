@@ -1,0 +1,56 @@
+{
+  "text": "Título: “La verdad oculta sobre la inflación: el gobierno manipula las cifras y los medios lo encubren”\n\nTexto:\n\nEn un nuevo giro escandaloso, el gobierno ha vuelto a manipular los índices de inflación. Según fuentes independientes, la inflación real supera ampliamente el 15% mensual, pero el INDEC, controlado por el oficialismo, reporta cifras artificialmente bajas. Expertos afirman que esta maniobra busca calmar a los mercados y engañar a la población.\n\nAdemás, medios alineados con el poder no cubren esta distorsión, ocultando la crisis económica que afecta directamente al bolsillo de los ciudadanos. Mientras tanto, se multiplican los cierres de comercios y la pobreza alcanza niveles alarmantes, aunque el discurso oficial insiste en que “la economía está en recuperación”.\n\n¿Hasta cuándo se podrá sostener esta mentira? La verdad está en peligro, y solo medios independientes siguen mostrando lo que realmente pasa.",
+  "analysis": {
+    "factual_accuracy": 30,
+    "bias": "anti-government",
+    "emotional_tone": "negative",
+    "recommendation": "To improve credibility, the text should include verifiable sources, present multiple viewpoints, and adopt a more neutral tone.",
+    "analysis_explanation": {
+      "factual_accuracy": {
+        "score": 30,
+        "key_indicators": "Lack of verifiable sources and reliance on unspecified 'independent sources'.",
+        "examples_from_text": "Claims about inflation rates and government manipulation without solid evidence.",
+        "weight_of_factors": "The absence of cited sources and data drastically reduces factual accuracy.",
+        "comparison_with_similar_content": "Similar critiques often provide more evidence or a balanced view to support claims."
+      },
+      "bias": {
+        "classification": "anti-government",
+        "language_patterns": "Use of loaded words ('escandaloso', 'manipular', 'crisis económica') and one-sided reporting.",
+        "examples_of_bias": "The text solely blames the government and aligned media, without presenting any counterarguments or official data.",
+        "context_and_implications": "Portrays the government in a negative light without offering a balanced perspective.",
+        "effect_on_message": "The bias may lead readers to question the objectivity of the information presented."
+      },
+      "emotional_tone": {
+        "classification": "negative",
+        "emotional_language_patterns": "Use of emotionally charged language to provoke feelings of anger and distrust.",
+        "examples_of_emotional_language": "'nuevo giro escandaloso', 'crisis económica', 'mentira'",
+        "impact_on_message": "The negative tone can influence the reader's emotional response to the content, potentially overshadowing a rational assessment of the facts.",
+        "effect_on_credibility": "Excessive use of negative emotional language can detract from the credibility of the article."
+      },
+      "recommendation": {
+        "text": "To improve credibility, the text should include verifiable sources, present multiple viewpoints, and adopt a more neutral tone.",
+        "key_factors": "Lack of evidence, biased language, and negative emotional tone.",
+        "specific_concerns": "The article's credibility suffers from its one-sided approach and lack of factual support.",
+        "relation_to_other_classifications": "The recommendation addresses concerns highlighted in the bias and factual accuracy analyses."
+      }
+    },
+    "article_type": {
+      "objective": 0.2,
+      "subjective": 0.8,
+      "speculative": 0.5,
+      "emotive": 0.7,
+      "clickbait": 0.6
+    },
+    "sentiments": {
+      "joy": 0.0,
+      "trust": 0.0,
+      "fear": 0.7,
+      "surprise": 0.0,
+      "sadness": 0.5,
+      "disgust": 0.4,
+      "anger": 0.8,
+      "anticipation": 0.2
+    }
+  },
+  "timestamp": "2025-06-05T21:40:49.299100"
+}

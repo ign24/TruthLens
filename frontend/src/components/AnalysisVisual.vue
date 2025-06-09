@@ -1,11 +1,12 @@
 <template>
+    <!-- Main container for analysis visualization blocks -->
     <div class="space-y-4 text-white group">
         <div class="mt-6 p-6 rounded-xl bg-slate-900/95 backdrop-blur-sm border border-white/10 
                     shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.3),inset_0_0_0_1px_rgba(255,255,255,0.1)]
                     text-white space-y-3 relative group">
             <div class="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-xl pointer-events-none"></div>
             
-            <!-- Analysis blocks -->
+            <!-- Analysis blocks for each text segment -->
             <div class="space-y-4">
                 <TransitionGroup 
                     name="block"
@@ -29,7 +30,7 @@
                             </span>
                         </div>
 
-                        <!-- Heatmap de estilo narrativo -->
+                        <!-- Narrative style heatmap bar -->
                         <div class="flex flex-col gap-2 mb-4">
                             <div class="flex h-4 w-full rounded-full overflow-hidden bg-slate-900/20 backdrop-blur-sm border border-white/5
                                       group/heatmap hover:border-white/10 transition-all duration-300">
@@ -50,7 +51,7 @@
                                     <div class="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent"></div>
                                 </div>
                             </div>
-                            <!-- Debug info -->
+                            <!-- Debug info for style distribution -->
                             <div class="flex justify-between text-xs text-slate-400/80">
                                 <div v-for="(value, style) in block.style_distribution" 
                                     :key="style"
@@ -68,7 +69,7 @@
                             </div>
                         </div>
 
-                        <!-- Analysis Details -->
+                        <!-- Analysis details for article type and sentiments -->
                         <AnalysisDetails 
                             :article-type="block.article_type"
                             :sentiments="block.sentiments"

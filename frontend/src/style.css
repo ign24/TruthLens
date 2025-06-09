@@ -89,3 +89,9 @@
     animation: fadeInUp 1s ease-out forwards;
   }
 }
+
+/* Scrollbar global oscuro y moderno */
+* {
+  scrollbar-width: thin;              /* Firefox */
+  scrollbar-color: #333 #222;          /* Firefox */
+}

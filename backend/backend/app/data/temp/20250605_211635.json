@@ -1,0 +1,56 @@
+{
+  "text": "Título: “La verdad oculta sobre la inflación: el gobierno manipula las cifras y los medios lo encubren”\n\nTexto:\n\nEn un nuevo giro escandaloso, el gobierno ha vuelto a manipular los índices de inflación. Según fuentes independientes, la inflación real supera ampliamente el 15% mensual, pero el INDEC, controlado por el oficialismo, reporta cifras artificialmente bajas. Expertos afirman que esta maniobra busca calmar a los mercados y engañar a la población.\n\nAdemás, medios alineados con el poder no cubren esta distorsión, ocultando la crisis económica que afecta directamente al bolsillo de los ciudadanos. Mientras tanto, se multiplican los cierres de comercios y la pobreza alcanza niveles alarmantes, aunque el discurso oficial insiste en que “la economía está en recuperación”.\n\n¿Hasta cuándo se podrá sostener esta mentira? La verdad está en peligro, y solo medios independientes siguen mostrando lo que realmente pasa.",
+  "analysis": {
+    "factual_accuracy": 20,
+    "bias": "anti-government",
+    "emotional_tone": "negative",
+    "recommendation": "The article should strive for a more balanced perspective, verifying claims with multiple sources and avoiding language that may be perceived as inflammatory. It is important to present data objectively and include responses or comments from the government or institutions that are being criticized.",
+    "analysis_explanation": {
+      "factual_accuracy": {
+        "score": 20,
+        "key_indicators": "Lack of verifiable data, reliance on unspecified 'independent sources', and absence of counterpoints or government's perspective.",
+        "examples_from_text": "Claims of inflation rates 'significantly exceeding 15% monthly' without providing concrete data or sources.",
+        "weight_of_factors": "The unverified claims and lack of balanced reporting heavily influenced the low factual accuracy score.",
+        "comparison_with_similar_content": "Compared to more balanced articles, this text lacks the necessary citations and presents its assertions without a basis in publicly available data."
+      },
+      "bias": {
+        "classification": "anti-government",
+        "language_patterns": "Use of emotionally charged words ('escandaloso', 'manipular', 'mentira'), definitive statements without proof, and a clear opposition stance.",
+        "examples_of_bias": "'el gobierno manipula', 'los medios lo encubren', 'la verdad está en peligro'.",
+        "context_and_implications": "The language and framing suggest a deliberate effort to portray the government negatively, without providing space for rebuttal or alternative views.",
+        "effect_on_message": "This bias may lead readers to distrust the government and media without critically assessing the evidence or seeking out alternative sources of information."
+      },
+      "emotional_tone": {
+        "classification": "negative",
+        "emotional_language_patterns": "Words and phrases that evoke fear ('crisis económica', 'la pobreza alcanza niveles alarmantes'), anger ('manipula', 'mentira'), and distrust ('la verdad está en peligro').",
+        "examples_of_emotional_language": "'escandaloso', 'crisis económica', 'la verdad está en peligro'.",
+        "impact_on_message": "The negative emotional tone may affect readers by engendering feelings of fear, anger, and helplessness, potentially leading to a biased understanding of the situation.",
+        "effect_on_credibility": "While the emotional appeal might engage readers, it could also undermine the article's credibility by indicating a lack of objectivity."
+      },
+      "recommendation": {
+        "text": "The article should strive for a more balanced perspective, verifying claims with multiple sources and avoiding language that may be perceived as inflammatory. It is important to present data objectively and include responses or comments from the government or institutions that are being criticized.",
+        "key_factors": "Balancing subjective claims with verifiable data, providing space for alternative viewpoints, moderating emotive language to maintain credibility.",
+        "specific_concerns": "The article's credibility is undermined by its one-sided perspective and reliance on unverified claims.",
+        "relation_to_other_classifications": "The recommendation addresses concerns identified in the factual accuracy, bias, and emotional tone sections, aiming to improve the overall quality and reliability of the article."
+      }
+    },
+    "article_type": {
+      "objective": 0.1,
+      "subjective": 0.6,
+      "speculative": 0.2,
+      "emotive": 0.7,
+      "clickbait": 0.5
+    },
+    "sentiments": {
+      "joy": 0.0,
+      "trust": 0.0,
+      "fear": 0.7,
+      "surprise": 0.0,
+      "sadness": 0.5,
+      "disgust": 0.4,
+      "anger": 0.8,
+      "anticipation": 0.0
+    }
+  },
+  "timestamp": "2025-06-05T21:16:35.331472"
+}

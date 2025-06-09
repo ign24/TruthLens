@@ -2,13 +2,14 @@ import os
 import requests
 from typing import List, Dict
 from dotenv import load_dotenv
+from pathlib import Path
 import logging
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Carga las variables del .env
-load_dotenv()
+# Cargar el .env desde la carpeta backend
+load_dotenv(str(Path(__file__).resolve().parent.parent.parent / ".env"))
 
 SERPER_API_KEY = os.getenv("SERPER_API_KEY")
 SERPER_API_URL = "https://google.serper.dev/search"

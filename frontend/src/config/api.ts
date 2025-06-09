@@ -21,6 +21,10 @@ export const getApiUrl = (endpoint: keyof typeof API_ENDPOINTS) => {
 
 // Helper function to check API health with timeout
 export const checkApiHealth = async () => {
+  // Health check disabled to save tokens
+  return true;
+  
+  /* Original implementation commented out
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
@@ -42,6 +46,7 @@ export const checkApiHealth = async () => {
     }
     return false;
   }
+  */
 };
 
 // Log current API configuration

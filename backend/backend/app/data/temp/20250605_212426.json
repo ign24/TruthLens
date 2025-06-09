@@ -1,0 +1,56 @@
+{
+  "text": "You won’t believe what scientists just discovered about coffee! The shocking truth they don’t want you to know is right here. Click before it’s taken down…",
+  "analysis": {
+    "factual_accuracy": 0,
+    "bias": "other",
+    "emotional_tone": "negative",
+    "recommendation": "Given the lack of substantive content and reliance on sensational tactics, it’s recommended to approach such statements with skepticism and seek information from credible sources.",
+    "analysis_explanation": {
+      "factual_accuracy": {
+        "score": 0,
+        "key_indicators": "The text provides no verifiable information or data points.",
+        "examples_from_text": "The entire message is speculative and lacks any direct claims or evidence.",
+        "weight_of_factors": "The absence of any factual content heavily influences the accuracy score.",
+        "comparison_with_similar_content": "Similar sensationalist headlines often lead to content with unsubstantiated claims or misinformation."
+      },
+      "bias": {
+        "classification": "other",
+        "language_patterns": "The use of sensational language and urgency ('shocking truth', 'before it’s taken down') without clear political or ideological direction.",
+        "examples_of_bias": "The text's attempt to provoke curiosity and concern without providing information.",
+        "context_and_implications": "Such tactics are often used to manipulate emotions rather than convey bias towards a specific viewpoint.",
+        "effect_on_message": "The choice of language detracts from credibility and encourages skepticism."
+      },
+      "emotional_tone": {
+        "classification": "negative",
+        "emotional_language_patterns": "Use of words like 'shocking' and creating a sense of urgency and potential loss ('Click before it’s taken down').",
+        "examples_of_emotional_language": "The entire sentence is structured to provoke an emotional reaction rather than inform.",
+        "impact_on_message": "The emotional manipulation undermines the potential for a rational, informed response.",
+        "effect_on_credibility": "Such tactics significantly decrease the credibility of the source and the information presented."
+      },
+      "recommendation": {
+        "text": "Given the lack of substantive content and reliance on sensational tactics, it’s recommended to approach such statements with skepticism and seek information from credible sources.",
+        "key_factors": "The speculative nature, high clickbait score, and negative emotional tone.",
+        "specific_concerns": "Lack of factual information, potential misinformation.",
+        "relation_to other_classifications": "The recommendation aligns with the analysis of bias, emotional tone, and the speculative nature of the content."
+      }
+    },
+    "article_type": {
+      "objective": 0.0,
+      "subjective": 0.1,
+      "speculative": 0.9,
+      "emotive": 0.8,
+      "clickbait": 1.0
+    },
+    "sentiments": {
+      "joy": 0.0,
+      "trust": 0.0,
+      "fear": 0.5,
+      "surprise": 0.5,
+      "sadness": 0.0,
+      "disgust": 0.0,
+      "anger": 0.0,
+      "anticipation": 0.1
+    }
+  },
+  "timestamp": "2025-06-05T21:24:26.064251"
+}

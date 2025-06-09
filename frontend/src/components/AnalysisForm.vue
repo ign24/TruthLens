@@ -1,50 +1,48 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import AnalysisVisual from './AnalysisVisual.vue';
+import { getApiUrl } from '../config/api';
 
+// State management for form and analysis
 const inputText = ref('');
 const isLoading = ref(false);
-const showExplanation = ref(false);
-const isLoadingExtended = ref(false);
 
-// Constants
-const API_BASE_URL = 'https://truthlens-backend-production.up.railway.app';
-
-
-// Analysis results
-const fakeNewsPercentage = ref(0);
+// Analysis results state
+const factualAccuracy = ref(0);
 const bias = ref('');
 const emotionalTone = ref('');
 const recommendation = ref('');
+
+// Detailed analysis explanation structure
 const analysisExplanation = ref<{
   analysis_explanation: {
     factual_accuracy: {
-    score: number;
-    key_indicators: string;
-    examples_from_text: string;
-    weight_of_factors: string;
-    comparison_with_similar_content: string;
-  };
+      score: number;
+      key_indicators: string;
+      examples_from_text: string;
+      weight_of_factors: string;
+      comparison_with_similar_content: string;
+    };
     bias: {
-    classification: string;
-    language_patterns: string;
-    examples_of_bias: string;
-    context_and_implications: string;
-    effect_on_message: string;
-  };
+      classification: string;
+      language_patterns: string;
+      examples_of_bias: string;
+      context_and_implications: string;
+      effect_on_message: string;
+    };
     emotional_tone: {
-    classification: string;
-    emotional_language_patterns: string;
-    examples_of_emotional_language: string;
-    impact_on_message: string;
-    effect_on_credibility: string;
-  };
+      classification: string;
+      emotional_language_patterns: string;
+      examples_of_emotional_language: string;
+      impact_on_message: string;
+      effect_on_credibility: string;
+    };
     recommendation: {
-    text: string;
-    key_factors: string;
-    specific_concerns: string;
-    relation_to_other_classifications: string;
-  };
+      text: string;
+      key_factors: string;
+      specific_concerns: string;
+      relation_to_other_classifications: string;
+    };
   };
 }>({
   analysis_explanation: {
@@ -77,10 +75,13 @@ const analysisExplanation = ref<{
     }
   }
 });
+
+// Analysis blocks for visualization
 const analysis = ref<{
   blocks?: any[];
 }>({});
 
+// Component events
 const emit = defineEmits<{
   analyze: [text: string, results: {
     fake_news_percentage: number;
@@ -91,6 +92,10 @@ const emit = defineEmits<{
   }]
 }>();
 
+/**
+ * Handle the analysis of input text
+ * Makes API request to analyze the text and updates the UI with results
+ */
 async function handleAnalyze() {
   if (!inputText.value.trim()) return;
   if (inputText.value.length > 4000) {
@@ -98,7 +103,8 @@ async function handleAnalyze() {
     return;
   }
   isLoading.value = true;
-  showExplanation.value = false;
+  
+  // Reset analysis explanation state
   analysisExplanation.value = {
     analysis_explanation: {
       factual_accuracy: {
@@ -132,15 +138,16 @@ async function handleAnalyze() {
   };
 
   try {
-    console.log('Making API request to:', `${API_BASE_URL}/api/analyze`);
-    const response = await fetch(`${API_BASE_URL}/api/analyze`, {
+    // Make API request to analyze text
+    console.log('Making API request to:', getApiUrl('ANALYZE'));
+    const response = await fetch(getApiUrl('ANALYZE'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        input_text: inputText.value.trim()
+        text: inputText.value.trim()
       })
     });
 
@@ -154,49 +161,56 @@ async function handleAnalyze() {
     console.log('Basic analysis result:', result);
 
     // Validate response structure
-    if (!result.factual_accuracy || !result.bias || !result.emotional_tone || !result.recommendation) {
+    if (
+      result.factual_accuracy === undefined ||
+      result.bias === undefined ||
+      result.emotional_tone === undefined ||
+      result.recommendation === undefined ||
+      result.article_type === undefined ||
+      result.sentiments === undefined ||
+      result.analysis_explanation === undefined
+    ) {
       console.error('Missing required fields in response:', result);
       throw new Error('Invalid response format: missing required fields');
     }
 
-    // Update local state
-    fakeNewsPercentage.value = result.factual_accuracy;
+    // Update local state with analysis results
+    factualAccuracy.value = result.factual_accuracy;
     bias.value = result.bias;
     emotionalTone.value = result.emotional_tone;
     recommendation.value = result.recommendation;
     
-    // Generate blocks with the correct structure
+    // Generate visualization blocks with analysis data
     const blocks = [{
       text: inputText.value.trim(),
       bias: result.bias,
-      highlights: [], // We'll need to get these from the backend
-      style_distribution: {
+      style_distribution: result.article_type || {
         objective: result.factual_accuracy / 100,
         subjective: 1 - (result.factual_accuracy / 100),
-        speculative: 0.2,
-        emotive: result.emotional_tone === 'emotional' ? 0.8 : 0.2,
-        clickbait: 0.1
+        speculative: 0,
+        emotive: 0,
+        clickbait: 0
       },
-      article_type: {
+      article_type: result.article_type || {
         objective: result.factual_accuracy / 100,
         subjective: 1 - (result.factual_accuracy / 100),
-        speculative: 0.2,
-        emotive: result.emotional_tone === 'emotional' ? 0.8 : 0.2,
-        clickbait: 0.1
+        speculative: 0,
+        emotive: 0,
+        clickbait: 0
       },
-      sentiments: {
-        joy: 0.1,
-        trust: result.factual_accuracy / 100,
-        fear: result.emotional_tone === 'alarmist' ? 0.8 : 0.2,
-        surprise: 0.1,
-        sadness: 0.1,
-        disgust: 0.1,
-        anger: result.emotional_tone === 'emotional' ? 0.6 : 0.1,
-        anticipation: 0.1
+      sentiments: result.sentiments || {
+        joy: 0,
+        trust: 0,
+        fear: 0,
+        surprise: 0,
+        sadness: 0,
+        disgust: 0,
+        anger: 0,
+        anticipation: 0
       }
     }];
 
-    // Log bias blocks data
+    // Log bias blocks data for debugging
     console.log('Generated blocks:', blocks);
 
     // Format the result for the parent component
@@ -209,9 +223,9 @@ async function handleAnalyze() {
     };
 
     // Update analysis with generated blocks
-      analysis.value = {
+    analysis.value = {
       blocks: blocks
-      };
+    };
 
     emit('analyze', inputText.value, formattedResult);
   } catch (error) {
@@ -219,245 +233,6 @@ async function handleAnalyze() {
     alert(error instanceof Error ? error.message : 'An error occurred while analyzing the text. Please try again.');
   } finally {
     isLoading.value = false;
-  }
-}
-
-async function handleExtendedAnalysis() {
-  if (!inputText.value.trim()) return;
-  
-  if (showExplanation.value) {
-    showExplanation.value = false;
-    return;
-  }
-
-  showExplanation.value = true;
-  isLoadingExtended.value = true;
-
-  try {
-    console.log('Starting extended analysis for text:', inputText.value.trim());
-    console.log('Making API request to:', `${API_BASE_URL}/api/analyze`);
-    
-    const requestBody = {
-      input_text: inputText.value.trim(),
-      extended: true,
-      prompt: `As a news analyst, provide a detailed explanation of the reasoning behind each assessment value assigned to the following text. Focus on specific evidence and clear justification for each classification.
-
-TEXT TO ANALYZE:
-${inputText.value}
-
-EXISTING ASSESSMENT:
-- Factual Accuracy: ${fakeNewsPercentage.value}%
-- Political Bias: ${bias.value}
-- Emotional Tone: ${emotionalTone.value}
-- Recommendation: ${recommendation.value}
-
-For each aspect, provide a structured analysis:
-
-1. FACTUAL ACCURACY (${fakeNewsPercentage.value}%)
-   - Key factors considered:
-     * Source reliability and attribution
-     * Verifiability of claims
-     * Balance of perspectives
-     * Use of evidence and data
-   - Specific examples from text
-   - Comparison with known facts
-   - Confidence level in assessment
-
-2. POLITICAL BIAS (${bias.value})
-   - Evidence of bias:
-     * Word choice and framing
-     * Source selection
-     * Quote usage
-     * Context presentation
-   - Political bias classification (select one):
-     * Neutral
-     * Center-left
-     * Left-leaning
-     * Center-right
-     * Right-leaning
-     * Anti-government
-     * Pro-government
-     * Other (specify)
-   - Specific examples from text
-   - Impact on message
-   - Cultural/political context
-
-3. EMOTIONAL TONE (${emotionalTone.value})
-   - Language patterns:
-     * Emotional triggers
-     * Sensational elements
-     * Rhetorical devices
-   - Specific examples from text
-   - Effect on reader perception
-   - Credibility implications
-
-4. RECOMMENDATION (${recommendation.value})
-   - Primary factors:
-     * Accuracy score
-     * Bias assessment
-     * Emotional tone
-     * Source reliability
-   - Specific concerns
-   - Suggested verification steps
-   - Risk assessment
-
-⚠️ Important Notes:
-- Use objective language
-- Provide specific examples from the text
-- Explain the relationship between different assessments
-- Consider cultural and political context
-- Be transparent about confidence levels
-- Highlight any significant uncertainties
-
-Format your response in a clear, structured manner that makes the reasoning behind each assessment easily understandable.`
-    };
-
-    console.log('Request body:', JSON.stringify(requestBody, null, 2));
-    
-    const response = await fetch(`${API_BASE_URL}/api/analyze`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        ...requestBody,
-        temperature: 0.4,
-        max_tokens: 2000
-      })
-    });
-
-    console.log('Extended analysis response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      console.error('Extended analysis error response:', errorData);
-      
-      if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please wait a minute before trying again.');
-      }
-      
-      throw new Error(errorData?.detail || errorData?.error || 'Extended analysis failed');
-    }
-
-    const result = await response.json();
-    console.log('Raw API response:', JSON.stringify(result, null, 2));
-    
-    // Log specific fields we expect
-    console.log('Expected fields check:', {
-      has_factual_accuracy: 'factual_accuracy' in result,
-      has_bias: 'bias' in result,
-      has_emotional_tone: 'emotional_tone' in result,
-      has_recommendation: 'recommendation' in result,
-      has_article_type: 'article_type' in result,
-      has_sentiments: 'sentiments' in result
-    });
-
-    // Validate response structure
-    if (!result.factual_accuracy || !result.bias || !result.emotional_tone || !result.recommendation) {
-      console.error('Missing required fields in response:', result);
-      throw new Error('Invalid response format: missing required fields');
-    }
-
-    // Create the extended analysis structure with default values for missing fields
-    const extendedAnalysis = {
-      analysis_explanation: {
-        factual_accuracy: {
-          score: result.factual_accuracy,
-          key_indicators: result.analysis_explanation?.factual_accuracy?.key_indicators || 
-            `The factual accuracy score of ${result.factual_accuracy}% is based on the balance of verifiable and speculative claims in the text.`,
-          examples_from_text: result.analysis_explanation?.factual_accuracy?.examples_from_text || 
-            `The text contains a mix of verifiable claims and speculative elements.`,
-          weight_of_factors: result.analysis_explanation?.factual_accuracy?.weight_of_factors || 
-            `This score considers the balance between verifiable claims and unverified statements.`,
-          comparison_with_similar_content: result.analysis_explanation?.factual_accuracy?.comparison_with_similar_content || 
-            `The text's approach to presenting information shows characteristics of ${result.article_type?.objective > 0.5 ? 'objective' : 'subjective'} reporting.`
-        },
-        bias: {
-          classification: result.bias,
-          language_patterns: result.analysis_explanation?.bias?.language_patterns || 
-            `The text shows ${result.bias} bias through its language patterns.`,
-          examples_of_bias: result.analysis_explanation?.bias?.examples_of_bias || 
-            `This bias is evident in how the text frames information.`,
-          context_and_implications: result.analysis_explanation?.bias?.context_and_implications || 
-            `The ${result.bias} bias influences how readers might interpret the information.`,
-          effect_on_message: result.analysis_explanation?.bias?.effect_on_message || 
-            `The message is affected by the ${result.bias} bias in its presentation.`
-        },
-        emotional_tone: {
-          classification: result.emotional_tone,
-          emotional_language_patterns: result.analysis_explanation?.emotional_tone?.emotional_language_patterns || 
-            `The text uses ${result.emotional_tone} language throughout.`,
-          examples_of_emotional_language: result.analysis_explanation?.emotional_tone?.examples_of_emotional_language || 
-            `The emotional tone is particularly evident in the text's language.`,
-          impact_on_message: result.analysis_explanation?.emotional_tone?.impact_on_message || 
-            `The ${result.emotional_tone} tone affects how the message is received.`,
-          effect_on_credibility: result.analysis_explanation?.emotional_tone?.effect_on_credibility || 
-            `The emotional language may impact the article's credibility.`
-        },
-        recommendation: {
-          text: result.recommendation,
-          key_factors: result.analysis_explanation?.recommendation?.key_factors || 
-            `Given the ${result.bias} bias and the ${result.emotional_tone} tone, readers should consider these factors.`,
-          specific_concerns: result.analysis_explanation?.recommendation?.specific_concerns || 
-            `The ${result.factual_accuracy}% factual accuracy score suggests some concerns.`,
-          relation_to_other_classifications: result.analysis_explanation?.recommendation?.relation_to_other_classifications || 
-            `This recommendation is based on the combination of ${result.bias} bias, ${result.emotional_tone} tone, and ${result.factual_accuracy}% factual accuracy.`
-        }
-      }
-    };
-
-    // Log the formatted analysis
-    console.log('Formatted analysis structure:', JSON.stringify(extendedAnalysis, null, 2));
-
-    // Set the analysis explanation
-    console.log('Setting analysis explanation:', extendedAnalysis);
-    analysisExplanation.value = extendedAnalysis;
-
-  } catch (error) {
-    console.error('Error getting extended analysis:', error);
-    console.error('Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
-    });
-    
-    // Show error message to user
-    alert(error instanceof Error ? error.message : 'Error loading extended analysis. Please try again.');
-    
-    analysisExplanation.value = {
-      analysis_explanation: {
-        factual_accuracy: {
-          score: 0,
-          key_indicators: error instanceof Error ? error.message : 'Error loading extended analysis. Please try again.',
-          examples_from_text: '',
-          weight_of_factors: '',
-          comparison_with_similar_content: ''
-        },
-        bias: {
-          classification: '',
-          language_patterns: '',
-          examples_of_bias: '',
-          context_and_implications: '',
-          effect_on_message: ''
-        },
-        emotional_tone: {
-          classification: '',
-          emotional_language_patterns: '',
-          examples_of_emotional_language: '',
-          impact_on_message: '',
-          effect_on_credibility: ''
-        },
-        recommendation: {
-          text: '',
-          key_factors: '',
-          specific_concerns: '',
-          relation_to_other_classifications: ''
-        }
-      }
-    };
-  } finally {
-    isLoadingExtended.value = false;
   }
 }
 
@@ -567,7 +342,7 @@ onMounted(() => {
 
     <!-- Results Display -->
     <div
-      v-if="fakeNewsPercentage !== 0 || bias || emotionalTone || recommendation"
+      v-if="factualAccuracy !== 0 || bias || emotionalTone || recommendation"
       class="mt-6 p-4 sm:p-6 rounded-xl bg-slate-900/95 backdrop-blur-sm border border-white/10 
              shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.3),inset_0_0_0_1px_rgba(255,255,255,0.1)]
              text-white space-y-3 sm:space-y-4 animate-slide-up relative"
@@ -575,8 +350,8 @@ onMounted(() => {
       <div class="animate-fade-in p-3 sm:p-4 bg-slate-800/60 rounded-lg border border-white/10 
                   shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.2)]" 
            style="animation-delay: 100ms">
-        <span class="font-semibold text-blue-300 text-sm sm:text-base">Fake News Percentage:</span>
-        <span class="text-sm sm:text-base">{{ fakeNewsPercentage }}%</span>
+        <span class="font-semibold text-blue-300 text-sm sm:text-base">Factual Accuracy:</span>
+        <span class="text-sm sm:text-base">{{ factualAccuracy }}%</span>
       </div>
       <div class="animate-fade-in p-3 sm:p-4 bg-slate-800/60 rounded-lg border border-white/10 
                   shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.2)]" 
@@ -595,170 +370,6 @@ onMounted(() => {
            style="animation-delay: 400ms">
         <span class="font-semibold text-blue-300 text-sm sm:text-base">Reader Recommendation:</span>
         <span class="text-sm sm:text-base">{{ recommendation }}</span>
-      </div>
-      
-      <!-- Extended Analysis Button -->
-      <div class="animate-fade-in mt-3 sm:mt-4" style="animation-delay: 500ms">
-        <button
-          @click="handleExtendedAnalysis"
-          :disabled="isLoadingExtended"
-          class="w-full relative group overflow-hidden bg-slate-900/80
-                 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg 
-                 transition-all duration-300 hover:shadow-lg hover:shadow-slate-500/25
-                 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none
-                 text-sm sm:text-base font-medium border border-slate-700/50
-                 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
-        >
-          <!-- Gradient overlay on hover -->
-          <div class="absolute inset-0 bg-gradient-to-r from-slate-800/50 via-slate-700/50 to-slate-800/50 
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          
-          <!-- Shine effect -->
-          <div class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000
-                      bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-
-          <span class="relative z-10 flex items-center justify-center gap-2">
-            <span v-if="!isLoadingExtended">
-              {{ showExplanation ? 'Hide' : 'Show' }} Extended Analysis
-            </span>
-            <span v-else class="flex items-center gap-2">
-              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Loading Analysis...
-            </span>
-            <svg 
-              v-if="!isLoadingExtended"
-              class="w-4 h-4 transition-transform duration-300"
-              :class="{ 'rotate-180': showExplanation }"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </span>
-        </button>
-      </div>
-
-      <!-- Analysis Explanation -->
-      <div 
-        v-if="showExplanation"
-        class="animate-fade-in mt-3 sm:mt-4 space-y-3 sm:space-y-4"
-      >
-        <div v-if="isLoadingExtended" class="p-3 sm:p-4 bg-slate-800/60 rounded-lg text-center text-slate-200
-                    shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.2)] text-sm sm:text-base">
-          Loading detailed analysis...
-        </div>
-        <template v-else>
-          <!-- Fake News Percentage Explanation -->
-          <div v-if="analysisExplanation.analysis_explanation.factual_accuracy" class="p-3 sm:p-4 bg-slate-800/60 rounded-lg border border-white/10
-                      shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.2)]">
-            <div class="flex items-center gap-2 mb-2 sm:mb-3">
-              <span class="font-semibold text-blue-300 text-sm sm:text-base">Fake News Score Analysis:</span>
-              <span class="text-white text-sm sm:text-base">{{ analysisExplanation.analysis_explanation.factual_accuracy.score }}%</span>
-            </div>
-            <div class="space-y-3 text-xs sm:text-sm text-slate-200">
-              <div>
-                <span class="font-medium text-blue-200">Key Indicators:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.factual_accuracy.key_indicators }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Examples from Text:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.factual_accuracy.examples_from_text }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Weight of Factors:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.factual_accuracy.weight_of_factors }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Comparison with Similar Content:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.factual_accuracy.comparison_with_similar_content }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bias Explanation -->
-          <div v-if="analysisExplanation.analysis_explanation.bias" class="p-3 sm:p-4 bg-slate-800/60 rounded-lg border border-white/10
-                      shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.2)]">
-            <div class="flex items-center gap-2 mb-3">
-              <span class="font-semibold text-blue-300">Bias Analysis:</span>
-              <span class="text-white">{{ analysisExplanation.analysis_explanation.bias.classification }}</span>
-            </div>
-            <div class="space-y-3 text-sm text-slate-200">
-              <div>
-                <span class="font-medium text-blue-200">Language Patterns:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.bias.language_patterns }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Examples of Bias:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.bias.examples_of_bias }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Context and Implications:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.bias.context_and_implications }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Effect on Message:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.bias.effect_on_message }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Emotional Tone Explanation -->
-          <div v-if="analysisExplanation.analysis_explanation.emotional_tone" class="p-3 sm:p-4 bg-slate-800/60 rounded-lg border border-white/10
-                      shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.2)]">
-            <div class="flex items-center gap-2 mb-3">
-              <span class="font-semibold text-blue-300">Emotional Tone Analysis:</span>
-              <span class="text-white">{{ analysisExplanation.analysis_explanation.emotional_tone.classification }}</span>
-            </div>
-            <div class="space-y-3 text-sm text-slate-200">
-              <div>
-                <span class="font-medium text-blue-200">Emotional Language Patterns:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.emotional_tone.emotional_language_patterns }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Examples of Emotional Language:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.emotional_tone.examples_of_emotional_language }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Impact on Message:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.emotional_tone.impact_on_message }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Effect on Credibility:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.emotional_tone.effect_on_credibility }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recommendation Explanation -->
-          <div v-if="analysisExplanation.analysis_explanation.recommendation" class="p-3 sm:p-4 bg-slate-800/60 rounded-lg border border-white/10
-                      shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.2)]">
-            <div class="flex items-center gap-2 mb-3">
-              <span class="font-semibold text-blue-300">Recommendation Analysis:</span>
-            </div>
-            <div class="space-y-3 text-sm text-slate-200">
-              <div>
-                <span class="font-medium text-blue-200">General Recommendation:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.recommendation.text }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Key Factors:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.recommendation.key_factors }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Specific Concerns:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.recommendation.specific_concerns }}</p>
-              </div>
-              <div>
-                <span class="font-medium text-blue-200">Relation to Other Classifications:</span>
-                <p class="mt-1">{{ analysisExplanation.analysis_explanation.recommendation.relation_to_other_classifications }}</p>
-              </div>
-            </div>
-          </div>
-        </template>
       </div>
     </div>
     <!-- Debug info for BiasBlocks -->
