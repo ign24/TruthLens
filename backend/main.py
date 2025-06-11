@@ -13,6 +13,8 @@ import os
 from fastapi import WebSocket
 from app.websockets.voice_handler import handle_voice_websocket
 from dotenv import load_dotenv
+from pathlib import Path
+from app.routes import image_analysis
 
 # Configure logging for application-wide error tracking and monitoring
 logging.basicConfig(
@@ -25,8 +27,7 @@ logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 
 load_dotenv()
-print("DEBUG ELEVENLABS_API_KEY:", os.getenv("ELEVENLABS_API_KEY"))
-print("DEBUG AGENT_ID:", os.getenv("AGENT_ID"))
+logger.debug("Environment variables loaded")
 
 class VoiceAssistantManager:
     def __init__(self):
@@ -64,10 +65,10 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Mount static files directory for audio files
-    temp_dir = "backend/app/data/temp"
-    os.makedirs(temp_dir, exist_ok=True)
-    app.mount("/static", StaticFiles(directory=temp_dir), name="static")
+    # Mount static files directory for audio files using relative path
+    temp_dir = Path(__file__).parent / "app" / "data" / "temp"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/static", StaticFiles(directory=str(temp_dir)), name="static")
 
     @app.get("/")
     async def root():
@@ -115,6 +116,7 @@ def create_app() -> FastAPI:
     app.include_router(analyze.router, prefix=settings.API_V1_STR, tags=["analysis"])
     app.include_router(chat.router, prefix=settings.API_V1_STR, tags=["chat"])
     app.include_router(translator.router, prefix=settings.API_V1_STR, tags=["translator"])
+    app.include_router(image_analysis.router, prefix="/api", tags=["image-analysis"])
 
     # Voice WebSocket endpoint
     @app.websocket("/ws/voice")

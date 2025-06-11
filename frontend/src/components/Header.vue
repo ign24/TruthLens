@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import InfoSection from './InfoSection.vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 
 // State management for help modal visibility and animation
 const showHelp = ref(false);
 const isClosing = ref(false);
+const route = useRoute();
+const openSidebar = ref(false);
 
 // Navigation links configuration
 const links = [
+  { name: 'Home', href: '/landing' },
   { name: 'Analyze', href: '/' },
+  { name: 'Image Analysis', href: '/image-analysis' },
   { name: 'Translator Pro', href: '/translator' },
   { name: 'Voice Chat', href: '/voice-chat' },
   { name: 'Docs', href: 'https://truthlens-backend-production.up.railway.app/docs', external: true }
@@ -48,9 +52,8 @@ const toggleHelp = () => {
             class="h-8 w-auto object-contain"
           />
         </div>
-        <!-- Navigation links and buttons -->
-        <div class="flex items-center space-x-6">
-          <!-- Dynamic navigation links (external and internal) -->
+        <!-- Desktop Navigation links and buttons -->
+        <div class="hidden md:flex items-center space-x-6">
           <template v-for="link in links" :key="link.name">
             <a
               v-if="link.external"
@@ -64,26 +67,83 @@ const toggleHelp = () => {
             <RouterLink
               v-else
               :to="link.href"
-              class="text-sm text-blue-200/80 hover:text-white transition-colors duration-200"
+              class="text-sm text-blue-200/80 hover:text-white transition-colors duration-200 relative group"
+              :class="{ 'text-white': route.path === link.href }"
             >
               {{ link.name }}
+              <span 
+                v-if="route.path === link.href"
+                class="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full transform scale-x-100 transition-transform duration-300"
+              ></span>
+              <span 
+                v-else
+                class="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+              ></span>
             </RouterLink>
           </template>
-          <!-- Help button to open modal -->
           <button
             @click="toggleHelp"
             class="text-sm text-blue-200/80 hover:text-white transition-colors duration-200"
           >
             Help
           </button>
-          <!-- Bolt attribution link -->
           <a href="https://bolt.new" target="_blank" rel="noopener noreferrer"
             class="flex items-center space-x-1 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-sm font-medium hover:opacity-90 transition-opacity">
             <span>Made with Bolt</span>
           </a>
         </div>
+        <!-- Mobile Hamburger -->
+        <button @click="openSidebar = true" class="md:hidden focus:outline-none">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
     </nav>
+    <!-- Mobile Sidebar -->
+    <transition name="fade">
+      <aside v-if="openSidebar" class="fixed inset-0 z-50 flex">
+        <div class="bg-gray-900 w-64 p-6 space-y-6 h-full shadow-2xl">
+          <button @click="openSidebar = false" class="mb-4 text-right w-full">
+            <svg class="w-6 h-6 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <template v-for="link in links" :key="link.name + '-mobile'">
+            <a
+              v-if="link.external"
+              :href="link.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block py-2 text-blue-200/80 hover:text-white transition-colors duration-200"
+              @click="openSidebar = false"
+            >
+              {{ link.name }}
+            </a>
+            <RouterLink
+              v-else
+              :to="link.href"
+              class="block py-2 text-blue-200/80 hover:text-white transition-colors duration-200"
+              :class="{ 'text-white': route.path === link.href }"
+              @click="openSidebar = false"
+            >
+              {{ link.name }}
+            </RouterLink>
+          </template>
+          <button
+            @click="() => { openSidebar = false; toggleHelp(); }"
+            class="block py-2 text-blue-200/80 hover:text-white transition-colors duration-200 w-full text-left"
+          >
+            Help
+          </button>
+          <a href="https://bolt.new" target="_blank" rel="noopener noreferrer"
+            class="flex items-center space-x-1 px-3 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-sm font-medium hover:opacity-90 transition-opacity w-full justify-center">
+            <span>Made with Bolt</span>
+          </a>
+        </div>
+        <div class="flex-1 bg-black bg-opacity-60" @click="openSidebar = false"></div>
+      </aside>
+    </transition>
   </header>
   <!-- Help Modal with overlay and animation -->
   <div v-if="showHelp || isClosing" class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -103,4 +163,10 @@ const toggleHelp = () => {
 </template>
 
 <style scoped>
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
 </style>

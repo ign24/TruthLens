@@ -15,6 +15,9 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent  # Corregido: apunta a /backe
 # Load environment variables from .env file
 load_dotenv(PROJECT_ROOT / ".env")
 
+# Log environment variable loading status
+logger.debug("Environment variables loaded from %s", PROJECT_ROOT / ".env")
+
 # Debug prints para verificar la carga de las llaves
 print("DEBUG OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
 print("DEBUG SERPER_API_KEY:", os.getenv("SERPER_API_KEY"))

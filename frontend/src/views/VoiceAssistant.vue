@@ -13,6 +13,16 @@
       <!-- Voice Assistant Main Button with animated disc background -->
       <transition name="scale-fade" appear>
         <div class="voice-button-wrapper" :class="{ 'active': isActive, 'listening': isListening, 'speaking': isSpeaking }">
+          <!-- Label Call Clara sobre el botón, solo cuando está inactiva -->
+          <div v-if="!isListening && !isSpeaking && !isConnecting && !isAlwaysListening" class="call-clara-label">
+            <svg width="16" height="16" viewBox="0 0 22 22" fill="none" style="margin-right:6px;">
+              <rect x="3" y="10" width="2" height="4" rx="1" fill="#60a5fa"/>
+              <rect x="7" y="7" width="2" height="10" rx="1" fill="#60a5fa"/>
+              <rect x="11" y="5" width="2" height="14" rx="1" fill="#60a5fa"/>
+              <rect x="15" y="8" width="2" height="8" rx="1" fill="#60a5fa"/>
+            </svg>
+            Call Clara
+          </div>
           <!-- Animated Background Disc -->
           <div class="voice-disc">
             <div :class="['disc-gradient', (isListening || isSpeaking) ? 'disc-gradient-bright' : '']"></div>
@@ -55,8 +65,8 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import listenStartSound from '../assets/sounds/listen_start.wav';
 import speakStartSound from '../assets/sounds/speak_start.mp3';
-import speechDemoAudio from '../assets/sounds/speech.mp3';
 import ChatBot from '../components/ChatBot.vue';
+import { Conversation } from '@elevenlabs/client';
 
 // State management
 const isActive = ref(false);
@@ -65,366 +75,115 @@ const isSpeaking = ref(false);
 const isConnecting = ref(false);
 const hasError = ref(false);
 const statusMessage = ref('');
-const connectionStatus = ref<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
+const isAlwaysListening = ref(false);
+const hasPermissions = ref(false);
 
-// WebSocket and audio management
-let websocket: WebSocket | null = null;
-let mediaRecorder: MediaRecorder | null = null;
-let audioStream: MediaStream | null = null;
-let audioContext: AudioContext | null = null;
-
-// Configuration
-const WEBSOCKET_URL = `${import.meta.env.VITE_API_BASE_URL?.replace('http', 'ws') || 'ws://localhost:8000'}/ws/voice`;
-const SAMPLE_RATE = 16000;
-
-// Modo demo: si es true, no se conecta al backend ni gasta créditos
-const isDemoMode = true;
+// ElevenLabs configuration
+const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+const agentId = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
+let conversation: Conversation | null = null;
 
 // Computed properties
 const getButtonLabel = () => {
-  if (isConnecting.value) return 'Connecting to voice assistant';
-  if (isListening.value) return 'Listening - Click to stop';
-  if (isSpeaking.value) return 'AI is speaking';
-  return 'Start voice conversation';
+  if (!hasPermissions.value) return 'Activar micrófono';
+  if (isConnecting.value) return 'Conectando...';
+  if (isAlwaysListening.value) return 'Finalizar conversación';
+  if (isListening.value) return 'Escuchando...';
+  if (isSpeaking.value) return 'Clara está respondiendo';
+  return 'Iniciar conversación';
 };
 
-// WebSocket management
-const connectWebSocket = async (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    try {
-      connectionStatus.value = 'connecting';
-      websocket = new WebSocket(WEBSOCKET_URL);
-      
-      websocket.onopen = () => {
-        console.log('Voice WebSocket connected');
-        connectionStatus.value = 'connected';
-        hasError.value = false;
-        statusMessage.value = '';
-        resolve(true);
-      };
-      
-      websocket.onmessage = async (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('Received WebSocket message:', data);
-          
-          if (data.type === 'audio_response') {
-            console.log('Received audio response, playing...');
-            if (!data.audio) {
-              console.error('Audio response missing audio data');
-              return;
-            }
-            await playAudioResponse(data.audio);
-          } else if (data.type === 'error') {
-            console.error('Received error:', data.message);
-            handleError(data.message);
-          } else if (data.type === 'status') {
-            console.log('Status update:', data.message);
-            statusMessage.value = data.message;
-          } else if (data.type === 'ping') {
-            // Ignorar mensajes de ping, son solo para mantener la conexión viva
-            return;
-          } else if (data.type === 'conversation_initiation_metadata') {
-            // La conversación está lista para recibir audio
-            console.log('Conversation initialized:', data.conversation_initiation_metadata_event);
-            statusMessage.value = 'Ready to speak...';
-          } else {
-            console.log('Unhandled message type:', data.type, data);
-          }
-        } catch (error) {
-          console.error('Error processing WebSocket message:', error);
-          handleError('Error processing voice response');
-        }
-      };
-      
-      websocket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        connectionStatus.value = 'error';
-        handleError('Connection error. Please try again.');
-        resolve(false);
-      };
-      
-      websocket.onclose = () => {
-        console.log('Voice WebSocket disconnected');
-        connectionStatus.value = 'disconnected';
-        websocket = null;
-      };
-      
-      // Timeout for connection
-      setTimeout(() => {
-        if (connectionStatus.value === 'connecting') {
-          handleError('Connection timeout. Please try again.');
-          resolve(false);
-        }
-      }, 10000);
-      
-    } catch (error) {
-      console.error('Error creating WebSocket:', error);
-      connectionStatus.value = 'error';
-      handleError('Failed to connect to voice service');
-      resolve(false);
-    }
-  });
-};
-
-// Audio management
-const initializeAudio = async (): Promise<boolean> => {
+// Initialize ElevenLabs Voice
+const initializeVoice = async (): Promise<boolean> => {
   try {
-    audioStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        sampleRate: SAMPLE_RATE,
-        channelCount: 1,
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
+    if (!apiKey || !agentId) {
+      throw new Error('Missing ElevenLabs API key or Agent ID');
+    }
+
+    // Request microphone permissions
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    hasPermissions.value = true;
+    stream.getTracks().forEach(track => track.stop()); // Stop the stream after getting permissions
+
+    // Start the conversation
+    conversation = await Conversation.startSession({
+      agentId,
+      onConnect: () => {
+        console.log('Voice conversation connected');
+        isListening.value = true;
+        isSpeaking.value = false;
+        isConnecting.value = false;
+      },
+      onDisconnect: () => {
+        console.log('Voice conversation disconnected');
+        isListening.value = false;
+        isSpeaking.value = false;
+        isConnecting.value = false;
+      },
+      onError: (message: string) => {
+        console.error('Voice error:', message);
+        handleError(message || 'Error en la conversación de voz');
+      },
+      onModeChange: (mode) => {
+        console.log('Mode changed:', mode.mode);
+        if (mode.mode === 'speaking') {
+          isSpeaking.value = true;
+          isListening.value = false;
+          // Play speak start sound
+          const audio = new Audio(speakStartSound);
+          audio.volume = 0.5;
+          audio.play();
+        } else {
+          isSpeaking.value = false;
+          if (isAlwaysListening.value) {
+            isListening.value = true;
+          }
+        }
       }
     });
-    
-    audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
-    
-    mediaRecorder = new MediaRecorder(audioStream, {
-      mimeType: 'audio/webm;codecs=opus'
-    });
-    
-    mediaRecorder.ondataavailable = async (event) => {
-      if (event.data.size > 0) {
-        // Solo convierte el blob a base64 y envíalo
-        const arrayBuffer = await event.data.arrayBuffer();
-        const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-        await sendAudioToServer(base64Audio);
-      }
-    };
-    
-    mediaRecorder.onstop = () => {
-      // Solo limpiamos el estado, ya no enviamos audio aquí
-    };
-    
+
     return true;
   } catch (error) {
-    console.error('Error initializing audio:', error);
-    handleError('Microphone access denied. Please allow microphone access and try again.');
+    console.error('Error initializing voice:', error);
+    handleError('Error al inicializar el asistente de voz');
     return false;
   }
 };
 
-const sendAudioToServer = async (audioData: string) => {
-  if (isDemoMode) {
-    try {
-      // En modo demo, usamos el endpoint mock
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/voice/generate?text=test`, {
-        method: 'GET',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to get mock audio response');
-      }
-      
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      
-      // Reproducir el audio mock
-      const audio = new Audio(audioUrl);
-      audio.volume = 1.0;
-      
-      isSpeaking.value = true;
-      statusMessage.value = 'AI is responding...';
-      
-      audio.onended = () => {
-        isSpeaking.value = false;
-        statusMessage.value = '';
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      audio.onerror = () => {
-        isSpeaking.value = false;
-        statusMessage.value = '';
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      await audio.play();
-      
-    } catch (error) {
-      console.error('Error in mock audio playback:', error);
-      handleError('Error playing mock audio response');
-    }
-    return;
-  }
-  
-  if (!websocket || websocket.readyState !== WebSocket.OPEN) {
-    handleError('Not connected to voice service');
-    return;
-  }
-  try {
-    websocket.send(JSON.stringify({
-      audio: audioData,
-      audio_format: 'webm',
-      type: 'user_audio_chunk'
-    }));
-    statusMessage.value = 'Analyzing your request...';
-  } catch (error) {
-    console.error('Error sending audio:', error);
-    handleError('Failed to send audio. Please try again.');
-  }
-};
-
-const playAudioResponse = async (base64Audio: string) => {
-  try {
-    console.log('Playing audio response...');
-    isSpeaking.value = true;
-    statusMessage.value = 'AI is responding...';
-    
-    // Convertir base64 a ArrayBuffer
-    const audioData = atob(base64Audio);
-    const audioArray = new Uint8Array(audioData.length);
-    for (let i = 0; i < audioData.length; i++) {
-      audioArray[i] = audioData.charCodeAt(i);
-    }
-    
-    // Crear Blob y URL
-    const audioBlob = new Blob([audioArray], { type: 'audio/mpeg' });
-    const audioUrl = URL.createObjectURL(audioBlob);
-    
-    // Crear y configurar Audio
-    const audio = new Audio(audioUrl);
-    
-    // Eventos del audio
-    audio.onended = () => {
-      console.log('Audio playback ended');
-      isSpeaking.value = false;
-      statusMessage.value = '';
-      URL.revokeObjectURL(audioUrl);
-    };
-    
-    audio.onerror = (error) => {
-      console.error('Error playing audio:', error);
-      isSpeaking.value = false;
-      handleError('Error playing audio response');
-      URL.revokeObjectURL(audioUrl);
-    };
-    
-    // Reproducir audio
-    console.log('Starting audio playback...');
-    await audio.play();
-    console.log('Audio playback started');
-    
-  } catch (error) {
-    console.error('Error in playAudioResponse:', error);
-    isSpeaking.value = false;
-    handleError('Error playing voice response');
-  }
-};
-
-// Main voice chat toggle
+// Voice chat control
 const toggleVoiceChat = async () => {
-  if (isDemoMode) {
-    // Si ya está escuchando o hablando, no hacer nada
-    if (isListening.value || isSpeaking.value || isConnecting.value) return;
-
-    // 1. Listening
-    isListening.value = true;
-    isActive.value = true;
-    statusMessage.value = 'Listening... Click to stop';
-
-    setTimeout(() => {
-      // 2. Processing
-      isListening.value = false;
-      isActive.value = false;
-      statusMessage.value = 'Processing your message...';
-
-      setTimeout(() => {
-        // 3. Speaking
-        isSpeaking.value = true;
-        statusMessage.value = 'AI is responding...';
-
-        // Reproducir el audio demo y mantener speaking activo durante la reproducción
-        const audio = new Audio(speechDemoAudio);
-        audio.volume = 1.0;
-        audio.onended = () => {
-          isSpeaking.value = false;
-          statusMessage.value = '';
-        };
-        audio.onerror = () => {
-          isSpeaking.value = false;
-          statusMessage.value = '';
-        };
-        audio.play();
-
-      }, 1500); // processing
-    }, 9000); // listening
-    return;
-  }
-  if (isListening.value) {
-    stopListening();
-    return;
-  }
-  if (isSpeaking.value) {
-    // Can't interrupt while speaking
-    return;
-  }
-  await startVoiceChat();
-};
-
-const startVoiceChat = async () => {
-  try {
+  if (!conversation) {
     isConnecting.value = true;
-    hasError.value = false;
-    statusMessage.value = 'Initializing voice assistant...';
-    
-    // Connect WebSocket if not connected
-    if (!websocket || websocket.readyState !== WebSocket.OPEN) {
-      const connected = await connectWebSocket();
-      if (!connected) {
-        isConnecting.value = false;
-        return;
-      }
-    }
-    
-    // Initialize audio if not initialized
-    if (!audioStream) {
-      const audioInitialized = await initializeAudio();
-      if (!audioInitialized) {
-        isConnecting.value = false;
-        return;
-      }
-    }
-    
+    const success = await initializeVoice();
     isConnecting.value = false;
-    startListening();
-    
-  } catch (error) {
-    console.error('Error starting voice chat:', error);
-    isConnecting.value = false;
-    handleError('Failed to start voice chat. Please try again.');
+    if (!success) return;
   }
-};
 
-const startListening = () => {
-  if (!mediaRecorder) return;
-  
-  try {
-    isListening.value = true;
-    isActive.value = true;
-    statusMessage.value = 'Listening... Click to stop';
-    
-    mediaRecorder.start(100);
-  } catch (error) {
-    console.error('Error starting recording:', error);
-    handleError('Failed to start recording');
-  }
-};
-
-const stopListening = () => {
-  if (!mediaRecorder || !isListening.value) return;
-  
-  try {
-    isListening.value = false;
+  if (isAlwaysListening.value && conversation) {
+    // Stop the conversation
+    await conversation.endSession();
+    conversation = null;
+    isAlwaysListening.value = false;
     isActive.value = false;
-    statusMessage.value = 'Processing...';
-    
-    mediaRecorder.stop();
-  } catch (error) {
-    console.error('Error stopping recording:', error);
-    handleError('Error stopping recording');
+  } else {
+    // Start the conversation
+    isActive.value = true;
+    isAlwaysListening.value = true;
+  }
+};
+
+// Mouse event handlers
+const handleMouseDown = () => {
+  if (!isAlwaysListening.value && !isConnecting.value) {
+    isActive.value = true;
+  }
+};
+
+const handleMouseUp = async () => {
+  if (!isAlwaysListening.value && !isConnecting.value && isActive.value && conversation) {
+    isActive.value = false;
+    await conversation.endSession();
+    conversation = null;
   }
 };
 
@@ -432,65 +191,36 @@ const stopListening = () => {
 const handleError = (message: string) => {
   hasError.value = true;
   statusMessage.value = message;
+  isConnecting.value = false;
   isListening.value = false;
   isSpeaking.value = false;
-  isConnecting.value = false;
+  isAlwaysListening.value = false;
   isActive.value = false;
   
-  // Clear error after 5 seconds
   setTimeout(() => {
-    if (hasError.value) {
-      hasError.value = false;
-      statusMessage.value = '';
-    }
-  }, 5000);
+    hasError.value = false;
+    statusMessage.value = '';
+  }, 3000);
 };
 
-// Button interaction handlers
-const handleMouseDown = () => {
-  if (!isListening.value && !isSpeaking.value && !isConnecting.value) {
-    // Add press effect
-  }
-};
-
-const handleMouseUp = () => {
-  // Remove press effect
-};
-
-// Cleanup
-const cleanup = () => {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop();
-  }
-  
-  if (audioStream) {
-    audioStream.getTracks().forEach(track => track.stop());
-    audioStream = null;
-  }
-  
-  if (audioContext) {
-    audioContext.close();
-    audioContext = null;
-  }
-  
-  if (websocket) {
-    websocket.close();
-    websocket = null;
-  }
-  
-  mediaRecorder = null;
-};
-
-// Lifecycle
-onMounted(() => {
-  // Check for required APIs
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    handleError('Voice features not supported in this browser');
+// Lifecycle hooks
+onMounted(async () => {
+  try {
+    // Check microphone permissions
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    hasPermissions.value = true;
+    stream.getTracks().forEach(track => track.stop());
+  } catch (error) {
+    console.error('Error checking microphone permissions:', error);
+    hasPermissions.value = false;
   }
 });
 
-onUnmounted(() => {
-  cleanup();
+onUnmounted(async () => {
+  if (conversation) {
+    await conversation.endSession();
+    conversation = null;
+  }
 });
 
 // Función para reproducir sonidos
@@ -502,6 +232,7 @@ const playSound = (src: string) => {
 
 // Watch para reproducir sonidos al cambiar de estado
 watch(isListening, (newVal, oldVal) => {
+  console.log('isListening cambió:', oldVal, '->', newVal);
   if (newVal && !oldVal) {
     playSound(listenStartSound);
   }
@@ -600,7 +331,7 @@ watch(isSpeaking, (newVal, oldVal) => {
 /* Main Button */
 .voice-button {
   position: relative;
-  z-index: 10;
+  z-index: 3;
   width: 240px;
   height: 240px;
   border-radius: 50%;
@@ -901,5 +632,44 @@ watch(isSpeaking, (newVal, oldVal) => {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.permission-hint,
+.permission-message {
+  display: none;
+}
+.permission-hint-text {
+  color: #60a5fa;
+  border: 1px solid #60a5fa;
+  background: none;
+  font-size: 0.97rem;
+  margin: 1.2rem auto 0 auto;
+  padding: 0.3rem 1.2rem;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 500;
+  max-width: 350px;
+  opacity: 0.8;
+}
+
+.call-clara-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(15,23,42,0.92);
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.93rem;
+  padding: 0.28rem 0.8rem;
+  border-radius: 2rem;
+  box-shadow: 0 2px 12px #0002;
+  z-index: 20;
+  gap: 0.4rem;
+  pointer-events: none;
+  letter-spacing: 0.01em;
 }
 </style> 

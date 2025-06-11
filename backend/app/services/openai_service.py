@@ -12,8 +12,10 @@ from ..prompts.analysis_prompts import (
     get_analysis_prompt,
     get_system_prompt,
     get_chat_system_prompt,
-    get_web_search_instructions
+    get_web_search_instructions,
+    get_image_forensics_prompt
 )
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -201,4 +203,35 @@ class OpenAIService:
 
         except Exception as e:
             logger.error(f"Error in OpenAI communication: {str(e)}", exc_info=True)
-            raise Exception(f"Error in OpenAI communication: {str(e)}") 
+            raise Exception(f"Error in OpenAI communication: {str(e)}")
+
+    async def analyze_with_gpt4(self, original_image: str, spectrum_image: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Analyze an image using GPT-4 Vision with the original image, spectrum, and metadata.
+        """
+        try:
+            prompt = get_image_forensics_prompt(metadata)
+            response = await self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an expert in forensic image analysis and AI-generated content detection."
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{original_image}"}},
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{spectrum_image}"}}
+                        ]
+                    }
+                ],
+                max_tokens=1200,
+                response_format={"type": "json_object"}
+            )
+            logger.error(f"[ImageAnalysis] Respuesta cruda de OpenAI: {response.choices[0].message.content!r}")
+            analysis = json.loads(response.choices[0].message.content)
+            return analysis
+        except Exception as e:
+            raise Exception(f"Error analyzing image with GPT-4: {str(e)}") 

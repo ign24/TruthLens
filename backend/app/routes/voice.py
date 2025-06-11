@@ -25,4 +25,11 @@ async def generate_voice(text: str):
             }
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/voice/agent-id")
+async def get_agent_id():
+    agent_id = os.getenv("AGENT_ID")
+    if not agent_id:
+        return {"error": "Agent ID not configured"}
+    return {"agent_id": agent_id} 
