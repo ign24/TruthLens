@@ -38,7 +38,7 @@ const toggleHelp = () => {
 
 <template>
   <!-- Fixed header with navigation, branding, and help modal -->
-  <header class="fixed top-0 left-0 right-0 z-10">
+  <header class="fixed top-0 left-0 right-0 z-40">
     <!-- Gradient background and blur effect -->
     <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-[#101624cc] via-[#1e293bcc] to-[#101624cc] backdrop-blur-2xl pointer-events-none"></div>
     <nav class="relative mx-auto px-4 sm:px-6 lg:px-8">

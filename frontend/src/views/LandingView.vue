@@ -1,14 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 text-white overflow-hidden">
+  <div class="min-h-screen landing-bg text-white overflow-hidden">
     <!-- Hero Section -->
     <section class="relative min-h-screen flex items-center justify-center px-4">
-      <!-- Background Effects -->
-      <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-500/5 to-cyan-500/5 rounded-full blur-3xl"></div>
-      </div>
-
       <div class="relative z-10 text-center max-w-6xl mx-auto">
         <!-- Logo -->
         <div class="mb-8">
@@ -28,23 +21,20 @@
           <span class="text-white">It questions them.</span>
         </h1>
 
-        <p class="text-lg md:text-xl text-blue-200/80 font-light mb-8 max-w-4xl mx-auto leading-relaxed animate-fade-in-up delay-200">
+        <p class="text-lg md:text-xl text-blue-200/80 font-light mb-16 max-w-4xl mx-auto leading-relaxed animate-fade-in-up delay-200">
           Uncover hidden bias. Spot emotional language. Detect fake and AI-generated content.
         </p>
 
         <!-- Primary CTA -->
-        <div class="mb-12 animate-fade-in-up delay-400">
+        <div class="mb-12 animate-fade-in-up delay-400 mt-8">
           <button
             @click="scrollToDemo"
-            class="group relative px-8 py-4 bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25 min-w-[200px]"
+            class="group relative px-8 py-4 sunken-card shadow-inner-sunken text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25 min-w-[200px] border border-white/10"
           >
-            <span class="relative z-10 flex items-center justify-center gap-3">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <span class="relative z-10 flex items-center justify-center">
               Try the Demo
             </span>
-            <div class="absolute inset-0 bg-gradient-to-r from-cyan-300 to-blue-400 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-black-400/10 to-cyan-400/10 rounded-xl opacity-30 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>
         </div>
 
@@ -57,95 +47,8 @@
       </div>
     </section>
 
-    <!-- Interactive Demo Section -->
-    <section ref="demoSection" class="py-20 px-4 bg-gradient-to-r from-slate-900/50 to-slate-800/50">
-      <div class="max-w-4xl mx-auto">
-        <div class="text-center mb-12">
-          <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">
-            See TruthLens in Action
-          </h2>
-          <p class="text-xl text-slate-300">
-            Paste any news article and watch our AI analyze it in real-time
-          </p>
-        </div>
-
-        <!-- Demo Interface -->
-        <div class="bg-slate-800/50 rounded-2xl p-8 border border-white/10">
-          <div class="mb-6">
-            <textarea
-              v-model="demoText"
-              placeholder="Paste a news article here to see how TruthLens analyzes bias, credibility, and emotional tone..."
-              class="w-full h-32 bg-slate-900/50 border border-blue-500/50 rounded-lg p-4 text-white placeholder-blue-200/50 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            ></textarea>
-          </div>
-
-          <div class="flex justify-center mb-8">
-            <button
-              @click="runDemo"
-              :disabled="!demoText.trim() || isDemoRunning"
-              class="px-8 py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-lg font-medium transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span v-if="isDemoRunning" class="flex items-center gap-2">
-                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Analyzing...
-              </span>
-              <span v-else>Analyze with TruthLens</span>
-            </button>
-          </div>
-
-          <!-- Demo Results -->
-          <div v-if="showDemoResults" class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
-            <div class="bg-slate-900/50 rounded-xl p-6 border border-cyan-400/20">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-white">Bias Detection</h3>
-                  <p class="text-2xl font-bold text-red-400">{{ demoResults.bias }}%</p>
-                </div>
-              </div>
-              <p class="text-sm text-slate-300">Political bias detected in language patterns</p>
-            </div>
-
-            <div class="bg-slate-900/50 rounded-xl p-6 border border-cyan-400/20">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-white">Credibility</h3>
-                  <p class="text-2xl font-bold text-yellow-400">{{ demoResults.credibility }}%</p>
-                </div>
-              </div>
-              <p class="text-sm text-slate-300">Factual accuracy and source reliability</p>
-            </div>
-
-            <div class="bg-slate-900/50 rounded-xl p-6 border border-cyan-400/20">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-white">Emotional Tone</h3>
-                  <p class="text-2xl font-bold text-purple-400">{{ demoResults.emotion }}</p>
-                </div>
-              </div>
-              <p class="text-sm text-slate-300">Emotional manipulation detected</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Features Section -->
-    <section class="py-20 px-4">
+    <section ref="featuresSection" class="py-20 px-4">
       <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16">
           <h2 class="text-4xl font-bold mb-6 bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">
@@ -158,9 +61,9 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <!-- Text Analyzer -->
-          <div class="group p-8 bg-slate-800/50 rounded-2xl border border-white/10 hover:border-cyan-400/50 transition-all duration-300 hover:transform hover:scale-105">
-            <div class="w-16 h-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <RouterLink to="/analyze" class="group p-8 sunken-card card-active rounded-2xl border border-cyan-400/50 shadow-lg scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300" tabindex="0">
+            <div class="w-16 h-16 bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+              <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
@@ -168,12 +71,12 @@
             <p class="text-slate-300 leading-relaxed">
               Detect bias, fake news percentage, and emotional tone in any article. Get detailed breakdowns of credibility and political leanings.
             </p>
-          </div>
+          </RouterLink>
 
           <!-- Multilingual Translator -->
-          <div class="group p-8 bg-slate-800/50 rounded-2xl border border-white/10 hover:border-cyan-400/50 transition-all duration-300 hover:transform hover:scale-105">
-            <div class="w-16 h-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <RouterLink to="/translator" class="group p-8 sunken-card card-active rounded-2xl border border-cyan-400/50 shadow-lg scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300" tabindex="0">
+            <div class="w-16 h-16 bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+              <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
               </svg>
             </div>
@@ -181,12 +84,12 @@
             <p class="text-slate-300 leading-relaxed">
               Professional translation across 35+ languages with context awareness and cultural adaptation for accurate communication.
             </p>
-          </div>
+          </RouterLink>
 
           <!-- Image Fake Detector -->
-          <div class="group p-8 bg-slate-800/50 rounded-2xl border border-white/10 hover:border-cyan-400/50 transition-all duration-300 hover:transform hover:scale-105">
-            <div class="w-16 h-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <RouterLink to="/image-analysis" class="group p-8 sunken-card card-active rounded-2xl border border-cyan-400/50 shadow-lg scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300" tabindex="0">
+            <div class="w-16 h-16 bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+              <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
@@ -194,12 +97,12 @@
             <p class="text-slate-300 leading-relaxed">
               Advanced AI detection of manipulated images, deepfakes, and AI-generated visuals to verify authentic content.
             </p>
-          </div>
+          </RouterLink>
 
           <!-- AI Text Detector -->
-          <div class="group p-8 bg-slate-800/50 rounded-2xl border border-white/10 hover:border-cyan-400/50 transition-all duration-300 hover:transform hover:scale-105">
-            <div class="w-16 h-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <RouterLink to="/ai-detector" class="group p-8 sunken-card card-active rounded-2xl border border-cyan-400/50 shadow-lg scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300" tabindex="0">
+            <div class="w-16 h-16 bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+              <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
@@ -207,27 +110,22 @@
             <p class="text-slate-300 leading-relaxed">
               Identify AI-generated content with high accuracy. Distinguish between human and machine-written text across various formats.
             </p>
-          </div>
+          </RouterLink>
 
           <!-- Clara Voice Assistant -->
-          <div class="group p-6 bg-slate-800/50 rounded-2xl border border-white/10 hover:border-cyan-400/50 transition-all duration-300 hover:transform hover:scale-105 md:col-span-2 lg:col-span-2">
-            <div class="flex items-center gap-6">
-              <div class="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M8 21l4-4H5a2 2 0 01-2-2V9a2 2 0 012-2h7l4-4v18z" />
-                </svg>
-              </div>
-              <div class="flex-1">
-                <h3 class="text-xl font-bold mb-2 text-white group-hover:text-cyan-300 transition-colors">Clara – Your AI Voice Companion</h3>
-                <p class="text-slate-300 text-sm mb-4">
-                  Natural conversations about news analysis in 35+ languages. Get instant explanations and insights through voice interaction.
-                </p>
-                <RouterLink to="/voice-assistant" class="inline-block px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:scale-105 transition-transform duration-300">
-                  Talk to Clara
-                </RouterLink>
-              </div>
+          <a href="http://localhost:5173/voice-chat" target="_blank" rel="noopener noreferrer" class="group p-6 sunken-card card-active rounded-2xl border-2 border-cyan-400/80 shadow-lg scale-105 md:col-span-2 lg:col-span-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400 flex items-center gap-8 transition-all duration-300" tabindex="0">
+            <div class="w-20 h-20 rounded-full flex items-center justify-center clara-gradient-avatar" style="position:relative;">
+              <!-- Clara avatar: conic-gradient animado -->
+              <div class="w-16 h-16 rounded-full animate-clara-gradient-spin" style="background:conic-gradient(from 0deg,#1e40af 0deg,#3b82f6 60deg,#06b6d4 120deg,#0ea5e9 180deg,#3b82f6 240deg,#1e40af 300deg,#1e40af 360deg);"></div>
+              <div class="clara-inner-circle"></div>
             </div>
-          </div>
+            <div class="flex-1">
+              <h3 class="text-2xl md:text-3xl font-bold mb-2 text-cyan-300 group-hover:text-cyan-200 transition-colors">AI Voice Assistant</h3>
+              <p class="text-slate-300 text-lg mb-0">
+                Meet Clara: your friendly, multilingual voice guide. Ask anything, get clear answers, and discover TruthLens in a whole new way—just by talking.
+              </p>
+            </div>
+          </a>
         </div>
       </div>
     </section>
@@ -310,13 +208,8 @@
         <!-- Credits Section -->
         <div class="border-t border-white/10 pt-8">
           <div class="text-center space-y-4">
-            <p class="text-slate-300">
-              <strong>Built with:</strong> Bolt, FastAPI, GPT-4, and ElevenLabs
-            </p>
-            <p class="text-slate-300">
-              <strong>Solo project by:</strong> <span class="text-cyan-400 font-semibold">Ignacio Zúñiga</span>
-            </p>
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-400/10 to-blue-500/10 rounded-full border border-cyan-400/20">
+
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-800/50 to-slate-900/50 rounded-full border border-cyan-400/20 shadow-inner">
               <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
@@ -338,7 +231,7 @@
 import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
-const demoSection = ref<HTMLElement | null>(null);
+const featuresSection = ref<HTMLElement | null>(null);
 const demoText = ref('');
 const isDemoRunning = ref(false);
 const showDemoResults = ref(false);
@@ -350,8 +243,8 @@ const demoResults = ref({
 });
 
 const scrollToDemo = () => {
-  if (demoSection.value) {
-    demoSection.value.scrollIntoView({ behavior: 'smooth' });
+  if (featuresSection.value) {
+    featuresSection.value.scrollIntoView({ behavior: 'smooth' });
   }
 };
 
@@ -443,5 +336,144 @@ const runDemo = async () => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Machine-like interface styles */
+.shadow-inner {
+  box-shadow: 
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Improved button styles */
+button {
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Improved card styles */
+.group {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.group:hover {
+  transform: translateY(-2px);
+}
+
+/* Improved text styles */
+.text-cyan-400 {
+  text-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+}
+
+/* Improved background effects */
+.bg-gradient-to-r {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Reuse the main diagonal lines and gradient background from global styles for landing */
+.landing-bg {
+  position: relative;
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, #070b12 0%, #101624 100%),
+    linear-gradient(45deg, #070b12 0%, #101624 50%, #0a101a 100%);
+}
+
+.landing-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(56, 191, 248, 0.158) 0%, transparent 80%),
+    radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(94, 234, 212, 0.05) 0%, transparent 50%),
+    linear-gradient(to right, 
+      rgba(0, 0, 0, 0.8) 0%, 
+      transparent 30%, 
+      transparent 70%, 
+      rgba(0, 0, 0, 0.8) 100%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 2px,
+      transparent 6px
+    );
+  background-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Darker hover for feature cards */
+.group.bg-slate-900\/80:hover,
+.group.bg-slate-900\/90:hover {
+  background-color: rgba(15, 23, 42, 0.95) !important;
+}
+
+.sunken-card {
+  background: linear-gradient(145deg, #101c2c 60%, #1e293b 100%);
+  box-shadow: inset 0 2px 8px 0 rgba(0,0,0,0.45), inset 0 1.5px 0 0 rgba(255,255,255,0.08), inset 0 -2.5px 8px 0 rgba(30,41,59,0.45);
+  border-top: 1.5px solid rgba(255,255,255,0.10);
+  border-bottom: 2.5px solid rgba(0,0,0,0.18);
+}
+.shadow-inner-sunken {
+  box-shadow: inset 0 4px 16px 0 rgba(0,0,0,0.32), inset 0 1.5px 0 0 rgba(255,255,255,0.10), inset 0 -2.5px 8px 0 rgba(30,41,59,0.45);
+}
+
+/* Estado activo permanente para tarjetas */
+.card-active {
+  background-color: #18263a !important;
+  border-color: #22d3ee80 !important;
+  box-shadow: 0 8px 32px 0 rgba(34,211,238,0.10), 0 1.5px 8px 0 rgba(30,41,59,0.18), 0 0 0 1.5px #22d3ee40;
+  transform: scale(1.015);
+}
+
+/* Clara avatar: gradiente cónico animado */
+.clara-gradient-avatar {
+  background: none;
+  position: relative;
+}
+.animate-clara-gradient-spin {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: rotate 6s linear infinite;
+}
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.clara-inner-circle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  background: rgba(16,22,36,0.92);
+  border-radius: 50%;
+  z-index: 10;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.18);
 }
 </style> 
