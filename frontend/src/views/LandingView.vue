@@ -233,39 +233,11 @@ import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 const featuresSection = ref<HTMLElement | null>(null);
-const demoText = ref('');
-const isDemoRunning = ref(false);
-const showDemoResults = ref(false);
-
-const demoResults = ref({
-  bias: 73,
-  credibility: 45,
-  emotion: 'Alarmist'
-});
 
 const scrollToDemo = () => {
   if (featuresSection.value) {
     featuresSection.value.scrollIntoView({ behavior: 'smooth' });
   }
-};
-
-const runDemo = async () => {
-  if (!demoText.value.trim()) return;
-  
-  isDemoRunning.value = true;
-  
-  // Simulate analysis
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // Generate random but realistic results
-  demoResults.value = {
-    bias: Math.floor(Math.random() * 40) + 60, // 60-100%
-    credibility: Math.floor(Math.random() * 60) + 20, // 20-80%
-    emotion: ['Alarmist', 'Emotional', 'Neutral', 'Sensational'][Math.floor(Math.random() * 4)]
-  };
-  
-  isDemoRunning.value = false;
-  showDemoResults.value = true;
 };
 </script>
 
