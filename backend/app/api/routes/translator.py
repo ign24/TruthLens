@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Cache for available voices
 _available_voices: Optional[Dict[str, str]] = None
+TEMP_DIR = "../backend/app/data/temp"
 
 def get_voice_for_language(lang: str) -> str:
     """
@@ -32,7 +33,6 @@ def get_voice_for_language(lang: str) -> str:
     if _available_voices is None:
         try:
             voices_response = elevenlabs_client.voices.get_all()
-            # voices_response is likely a tuple (list, ...), so take the first element if needed
             voices = voices_response[0] if isinstance(voices_response, tuple) else voices_response
             _available_voices = {}
             for voice in voices:
@@ -70,11 +70,6 @@ def get_voice_for_language(lang: str) -> str:
     # If still no match, use English as fallback
     logger.warning(f"No voice found for language {lang}, using English as fallback")
     return _available_voices.get("en", "21m00Tcm4TlvDq8ikWAM")
-
-TEMP_DIR = "backend/app/data/temp"
-
-# Ensure temp directory exists
-os.makedirs(TEMP_DIR, exist_ok=True)
 
 @router.post("/translate", response_model=TranslationResponse)
 async def translate_text(request: TranslationRequest):

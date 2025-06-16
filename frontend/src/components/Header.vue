@@ -12,9 +12,10 @@ const openSidebar = ref(false);
 // Navigation links configuration
 const links = [
   { name: 'Home', href: '/landing' },
-  { name: 'Analyze', href: '/' },
+  { name: 'Analyze', href: '/analyze' },
   { name: 'Image Analysis', href: '/image-analysis' },
   { name: 'Translator Pro', href: '/translator' },
+  { name: 'ChatBot', href: '/chatbot' },
   { name: 'Voice Chat', href: '/voice-chat' },
   { name: 'Docs', href: 'https://truthlens-backend-production.up.railway.app/docs', external: true }
 ];

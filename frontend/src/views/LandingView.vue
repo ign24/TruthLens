@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen landing-bg text-white overflow-hidden">
+  <div class="min-h-screen text-white overflow-hidden">
     <!-- Hero Section -->
     <section class="relative min-h-screen flex items-center justify-center px-4">
       <div class="relative z-10 text-center max-w-6xl mx-auto">
@@ -26,15 +26,15 @@
         </p>
 
         <!-- Primary CTA -->
-        <div class="mb-12 animate-fade-in-up delay-400 mt-8">
+        <div class="mb-24 animate-fade-in-up delay-400 mt-12 flex justify-center">
           <button
             @click="scrollToDemo"
-            class="group relative px-8 py-4 sunken-card shadow-inner-sunken text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25 min-w-[200px] border border-white/10"
+            class="group px-10 py-5 card-active rounded-2xl border border-cyan-400/50 shadow-lg text-white font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25 min-w-[220px] focus:outline-none focus:ring-2 focus:ring-cyan-400 relative overflow-hidden"
           >
             <span class="relative z-10 flex items-center justify-center">
               Try the Demo
             </span>
-            <div class="absolute inset-0 bg-gradient-to-r from-black-400/10 to-cyan-400/10 rounded-xl opacity-30 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-cyan-400/10 to-blue-400/10 rounded-2xl opacity-30 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>
         </div>
 
@@ -99,16 +99,17 @@
             </p>
           </RouterLink>
 
-          <!-- AI Text Detector -->
+          <!-- TruthLens Assistant (antes AI Text Detector) -->
           <RouterLink to="/ai-detector" class="group p-8 sunken-card card-active rounded-2xl border border-cyan-400/50 shadow-lg scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300" tabindex="0">
             <div class="w-16 h-16 bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-inner">
               <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            <h3 class="text-2xl font-bold mb-4 text-white group-hover:text-cyan-300 transition-colors">AI Text Detector</h3>
+            <h3 class="text-2xl font-bold mb-4 text-white group-hover:text-cyan-300 transition-colors">TruthLens Assistant</h3>
             <p class="text-slate-300 leading-relaxed">
-              Identify AI-generated content with high accuracy. Distinguish between human and machine-written text across various formats.
+              A multilingual fact-checking chat.<br>
+              Checks facts, uncovers bias, and decodes media narratives, fluent in every language you think in.
             </p>
           </RouterLink>
 
@@ -387,7 +388,8 @@ button:active {
   100% { background-position: 0% 50%; }
 }
 
-/* Reuse the main diagonal lines and gradient background from global styles for landing */
+/* Eliminar o comentar la clase landing-bg y su ::before para unificar el fondo */
+/*
 .landing-bg {
   position: relative;
   min-height: 100vh;
@@ -395,7 +397,6 @@ button:active {
     linear-gradient(135deg, #070b12 0%, #101624 100%),
     linear-gradient(45deg, #070b12 0%, #101624 50%, #0a101a 100%);
 }
-
 .landing-bg::before {
   content: '';
   position: fixed;
@@ -423,6 +424,7 @@ button:active {
   pointer-events: none;
   z-index: 0;
 }
+*/
 
 /* Darker hover for feature cards */
 .group.bg-slate-900\/80:hover,

@@ -4,14 +4,23 @@ import HomeView from '../views/HomeView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
+    path: '/',
+    redirect: '/landing'
+  },
+  {
     path: '/landing',
     name: 'landing',
     component: () => import('../views/LandingView.vue')
   },
   {
-    path: '/',
-    name: 'home',
-    component: () => HomeView
+    path: '/analyze',
+    name: 'analyze',
+    component: () => import('../views/HomeView.vue')
+  },
+  {
+    path: '/chatbot',
+    name: 'chatbot',
+    component: () => import('../views/ChatBotView.vue')
   },
   {
     path: '/translator',

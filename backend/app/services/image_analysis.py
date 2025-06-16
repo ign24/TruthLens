@@ -44,12 +44,26 @@ def extract_metadata(img: Image.Image) -> Dict[str, Any]:
         if '0th' in exif_dict:
             for tag in piexif.TAGS['0th']:
                 if tag in exif_dict['0th']:
-                    metadata[f'exif_{piexif.TAGS["0th"][tag]["name"]}'] = exif_dict['0th'][tag]
+                    value = exif_dict['0th'][tag]
+                    # Convert bytes to string if necessary
+                    if isinstance(value, bytes):
+                        try:
+                            value = value.decode('utf-8')
+                        except UnicodeDecodeError:
+                            value = str(value)
+                    metadata[f'exif_{piexif.TAGS["0th"][tag]["name"]}'] = value
                     
         if 'Exif' in exif_dict:
             for tag in piexif.TAGS['Exif']:
                 if tag in exif_dict['Exif']:
-                    metadata[f'exif_{piexif.TAGS["Exif"][tag]["name"]}'] = exif_dict['Exif'][tag]
+                    value = exif_dict['Exif'][tag]
+                    # Convert bytes to string if necessary
+                    if isinstance(value, bytes):
+                        try:
+                            value = value.decode('utf-8')
+                        except UnicodeDecodeError:
+                            value = str(value)
+                    metadata[f'exif_{piexif.TAGS["Exif"][tag]["name"]}'] = value
     except:
         metadata['exif_error'] = 'No EXIF data available'
     

@@ -8,6 +8,7 @@ interface AnalysisResults {
   spectral_clues: string[];
   metadata_clues: string[];
   verdict: string;
+  justification: string;
   recommendation: string;
 }
 
@@ -165,10 +166,26 @@ const getVerdictColorClass = (verdict: string) => {
           <Card class="flex flex-col justify-between animate-fade-in">
             <h3 class="text-lg font-semibold text-blue-200 mb-2">Final Verdict</h3>
             <p class="text-base font-medium mb-2" :class="getVerdictColorClass(analysisResults.verdict)">{{ analysisResults.verdict }}</p>
+            <p class="text-slate-300 mb-2">{{ analysisResults.justification }}</p>
             <p class="text-slate-300">{{ analysisResults.recommendation }}</p>
           </Card>
         </div>
       </transition>
+    </div>
+    <div class="mt-12 max-w-2xl mx-auto">
+      <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 rounded-2xl shadow-xl border border-cyan-400/20 p-8 mb-8 flex flex-col items-start">
+        <div class="flex items-center mb-4">
+          <svg class="w-7 h-7 text-cyan-300 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v6m0 6v6m9-9h-6m-6 0H3m13.07-6.93l-4.24 4.24m0 0l-4.24-4.24m8.48 8.48l-4.24 4.24m0 0l-4.24-4.24" stroke-linecap="round"/></svg>
+          <h2 class="text-2xl font-bold text-white">Image Analysis</h2>
+        </div>
+        <p class="text-slate-200 mb-3">Verify if an image is real or artificially generated. Upload any photo or screenshot and TruthLens will evaluate:</p>
+        <ul class="list-disc list-inside text-slate-300 mb-3">
+          <li>AI-generated imagery and deepfake probability</li>
+          <li>Digital tampering and manipulation clues</li>
+          <li>Metadata integrity and visual anomalies</li>
+        </ul>
+        <p class="text-slate-200">The tool provides a confidence score and a transparent breakdown of authenticity risks.</p>
+      </div>
     </div>
   </div>
 </template>

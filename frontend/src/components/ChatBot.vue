@@ -20,6 +20,10 @@ const props = defineProps({
         key => key in value
       );
     }
+  },
+  standalone: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -38,6 +42,20 @@ const isApiHealthy = ref(true)
 const retryCount = ref(0)
 const MAX_RETRIES = 3
 
+const quickPrompts = [
+  {
+    label: 'Analyze for bias',
+    value: 'Analyze this news article for bias'
+  },
+  {
+    label: 'Source credibility',
+    value: 'Evaluate source credibility'
+  },
+  {
+    label: 'Detect emotional manipulation',
+    value: 'Detect emotional manipulation'
+  }
+];
 
 // Check if device is mobile
 const checkMobile = () => {
@@ -378,6 +396,13 @@ Always identify yourself as the TruthLens Assistant. / Siempre identifícate com
   }
 };
 
+function handleQuickPrompt(prompt) {
+  userInput.value = prompt.value;
+  nextTick(() => {
+    handleInputFocus();
+  });
+}
+
 // Watch for changes in articleText and analysisResult
 watch(() => props.articleText, (newText) => {
   console.log('📄 Artículo actualizado:', newText ? 'Presente' : 'Ausente')
@@ -427,10 +452,12 @@ function linkify(text) {
 </script>
 
 <template>
-  <div :class="[isOpen ? 'fixed bottom-4 z-30' : 'fixed bottom-4 right-4 z-5']">
-    <!-- Toggle Button -->
+  <div :class="[
+    standalone ? 'w-full h-full' : (isOpen ? 'fixed bottom-4 z-30' : 'fixed bottom-4 right-4 z-5')
+  ]">
+    <!-- Toggle Button (solo si no es standalone) -->
     <button
-      v-if="!isOpen"
+      v-if="!standalone && !isOpen"
       @click="toggleChat"
       class="bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-full p-3 md:p-4 shadow-lg transition-all duration-300 hover:opacity-90 hover:scale-105 active:scale-95 chat-button touch-manipulation"
       :aria-label="'Abrir chat'"
@@ -460,15 +487,19 @@ function linkify(text) {
       @leave="onLeave"
     >
       <div
-        v-if="isOpen"
-        class="w-full h-full md:w-[450px] md:h-[600px] md:bottom-8 md:right-8 md:fixed bg-slate-900/80 backdrop-blur-md rounded-none md:rounded-2xl shadow-2xl border border-white/10 flex flex-col"
+        v-if="standalone || isOpen"
+        :class="[
+          standalone
+            ? 'w-full h-full bg-transparent border-none shadow-none rounded-none flex flex-col'
+            : 'w-full h-full md:w-[450px] md:h-[600px] md:bottom-8 md:right-8 md:fixed bg-slate-900/80 backdrop-blur-md rounded-none md:rounded-2xl shadow-2xl border border-white/10 flex flex-col'
+        ]"
         role="dialog"
         aria-modal="true"
         aria-label="Chat de TruthLens"
         style="margin-top: 2rem;"
       >
-        <!-- Header -->
-        <div class="flex-none w-full h-16 border-b border-white/10 bg-slate-800/95 flex items-center py-2 rounded-t-2xl shadow-md">
+        <!-- Header (solo si no es standalone) -->
+        <div v-if="!standalone" class="flex-none w-full h-16 border-b border-white/10 bg-slate-800/95 flex items-center py-2 rounded-t-2xl shadow-md">
           <div class="flex items-center justify-between w-full px-6">
             <div class="flex items-center space-x-1">
               <h3 class="text-white text-base font-display font-semibold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent header-inset-title">TruthLens Assistant</h3>
@@ -485,10 +516,13 @@ function linkify(text) {
           </div>
         </div>
 
-        <!-- Messages Container -->
+        <!-- Mensajes -->
         <div
           ref="messagesContainer"
-          class="flex-1 overflow-y-auto px-6 py-6 space-y-3 bg-slate-900/95 scroll-smooth"
+          :class="[
+            'flex-1 overflow-y-auto space-y-3 scroll-smooth',
+            standalone ? 'min-h-[420px] md:min-h-[500px] bg-slate-900/95 rounded-2xl p-6 md:p-8' : 'px-6 py-6 bg-slate-900/95'
+          ]"
           role="log"
           aria-live="polite"
         >
@@ -545,6 +579,20 @@ function linkify(text) {
             <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-100"></div>
             <div class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-200"></div>
           </div>
+          <slot />
+        </div>
+
+        <!-- Quick prompts abajo, fuera del área de mensajes, solo en standalone -->
+        <div v-if="standalone" class="w-full flex gap-2 justify-center items-center px-4 pb-2 mt-2">
+          <button
+            v-for="prompt in quickPrompts"
+            :key="prompt.label"
+            @click="handleQuickPrompt(prompt)"
+            class="flex items-center gap-2 px-3 py-3 rounded-lg border border-cyan-400/20 bg-slate-800/80 text-sm font-medium text-white shadow hover:bg-slate-800/95 hover:border-cyan-400/60 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 flex-1 min-w-0"
+          >
+            <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v6m0 6v6m9-9h-6m-6 0H3m13.07-6.93l-4.24 4.24m0 0l-4.24-4.24m8.48 8.48l-4.24 4.24m0 0l-4.24-4.24" stroke-linecap="round"/></svg>
+            {{ prompt.label }}
+          </button>
         </div>
 
         <!-- Input Area -->
