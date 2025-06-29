@@ -98,8 +98,8 @@ const emit = defineEmits<{
  */
 async function handleAnalyze() {
   if (!inputText.value.trim()) return;
-  if (inputText.value.length > 4000) {
-    alert("The text is too long. Please limit it to 4000 characters.");
+  if (inputText.value.length > 8000) {
+    alert("The text is too long. Please limit it to 8000 characters.");
     return;
   }
   isLoading.value = true;
@@ -207,7 +207,9 @@ async function handleAnalyze() {
         disgust: 0,
         anger: 0,
         anticipation: 0
-      }
+      },
+      topic: result.topic || '',
+      frames_detected: result.frames_detected || []
     }];
 
     // Log bias blocks data for debugging
@@ -266,7 +268,7 @@ onMounted(() => {
       <div class="absolute -inset-[1px] rounded-lg bg-gradient-to-r from-cyan-400 to-blue-400 z-0 transition-all duration-300 group-hover:opacity-80"></div>
       <textarea
         v-model="inputText"
-        placeholder="Write or paste your text here (4000 characters max)..."
+        placeholder="Write or paste your text here (8000 characters max)..."
         class="w-full h-32 sm:h-40 p-3 sm:p-4 rounded-lg glass-input text-white placeholder-blue-200/50 relative z-10 bg-slate-900
                transition-all duration-300 focus:ring-2 focus:ring-blue-500/50 focus:shadow-lg
                text-sm sm:text-base"
@@ -274,9 +276,9 @@ onMounted(() => {
     </div>
     <div
         class="mt-1 text-xs sm:text-sm text-right transition-colors duration-300"
-        :class="inputText.length > 4000 ? 'text-red-400' : 'text-blue-200/70'"
+        :class="inputText.length > 8000 ? 'text-red-400' : 'text-blue-200/70'"
       >
-        {{ inputText.length }} / 4000
+        {{ inputText.length }} / 8000
     </div>
 
     <div class="mt-4 flex flex-col sm:flex-row gap-3 sm:gap-4">

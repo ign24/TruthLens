@@ -1,9 +1,6 @@
 <script setup>
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
-import { getApiUrl, checkApiHealth } from '../config/api'
-
-// Constants
-const API_BASE_URL = 'https://truthlens-backend-production.up.railway.app';
+import { getApiUrl, checkApiHealth, CHAT_CONFIG, convertBiasToFloat, convertEmotionalToneToFloat, checkMobile as checkMobileConfig } from '../config'
 
 const props = defineProps({
   articleText: {
@@ -40,32 +37,36 @@ const inputRef = ref(null)
 const isMobile = ref(false)
 const isApiHealthy = ref(true)
 const retryCount = ref(0)
-const MAX_RETRIES = 3
 
-const quickPrompts = [
-  {
-    label: 'Analyze for bias',
-    value: 'Analyze this news article for bias'
-  },
-  {
-    label: 'Source credibility',
-    value: 'Evaluate source credibility'
-  },
-  {
-    label: 'Detect emotional manipulation',
-    value: 'Detect emotional manipulation'
-  }
-];
+// Store original body overflow to restore it later
+const originalBodyOverflow = ref('')
 
 // Check if device is mobile
 const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768
+  isMobile.value = checkMobileConfig()
+}
+
+// Scroll lock management
+const lockScroll = () => {
+  if (isMobile.value && !props.standalone) {
+    originalBodyOverflow.value = document.body.style.overflow || ''
+    document.body.style.overflow = 'hidden'
+  }
+}
+
+const unlockScroll = () => {
+  if (isMobile.value && !props.standalone) {
+    document.body.style.overflow = originalBodyOverflow.value
+  }
 }
 
 // Lifecycle hooks
 onMounted(async () => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
+  
+  // Store original overflow value
+  originalBodyOverflow.value = document.body.style.overflow || ''
   
   // Check API health
   isApiHealthy.value = await checkApiHealth()
@@ -79,6 +80,8 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
+  // Always restore scroll when component unmounts
+  unlockScroll()
 })
 
 // Computed
@@ -91,17 +94,13 @@ const chatContainerClass = computed(() => ({
 const toggleChat = () => {
   isOpen.value = !isOpen.value
   if (isOpen.value) {
+    lockScroll()
     nextTick(() => {
       handleInputFocus()
-      // Prevent body scroll when chat is open on mobile
-      if (isMobile.value) {
-        document.body.style.overflow = 'hidden'
-      }
     })
   } else {
+    unlockScroll()
     emit('close')
-    // Restore body scroll
-    document.body.style.overflow = ''
   }
 }
 
@@ -113,42 +112,6 @@ const scrollToBottom = () => {
   }
 }
 
-const convertBiasToFloat = (bias) => {
-  if (!bias) return 0.5;
-  
-  const biasMap = {
-    'neutral': 0.5,
-    'slightly biased': 0.3,
-    'biased': 0.2,
-    'heavily biased': 0.1,
-    'unbiased': 0.8
-  }
-  return biasMap[bias.toLowerCase()] || 0.5
-}
-
-const convertEmotionalToneToFloat = (tone) => {
-  if (!tone) return 0.5;
-  
-  const toneMap = {
-    'balanced': 0.5,
-    'emotional': 0.3,
-    'very emotional': 0.2,
-    'neutral': 0.7,
-    'objective': 0.8
-  }
-  return toneMap[tone.toLowerCase()] || 0.5
-}
-
-// Add method to handle input focus
-const handleInputFocus = () => {
-  if (inputRef.value) {
-    inputRef.value.focus()
-    // Ensure cursor is at the end of the input
-    const length = inputRef.value.value.length
-    inputRef.value.setSelectionRange(length, length)
-  }
-}
-
 const sendMessage = async () => {
   if (!userInput.value.trim()) return;
 
@@ -157,13 +120,13 @@ const sendMessage = async () => {
     if (!isApiHealthy.value) {
       isApiHealthy.value = await checkApiHealth()
       if (!isApiHealthy.value) {
-        if (retryCount.value < MAX_RETRIES) {
+        if (retryCount.value < CHAT_CONFIG.MAX_RETRIES) {
           retryCount.value++
           messages.value.push({
             role: 'assistant',
-            content: `Warning: Retrying server connection (attempt ${retryCount.value}/${MAX_RETRIES})...`
+            content: `Warning: Retrying server connection (attempt ${retryCount.value}/${CHAT_CONFIG.MAX_RETRIES})...`
           })
-          await new Promise(resolve => setTimeout(resolve, 2000))
+          await new Promise(resolve => setTimeout(resolve, CHAT_CONFIG.RETRY_DELAY))
           return sendMessage()
         } else {
           retryCount.value = 0
@@ -186,58 +149,9 @@ const sendMessage = async () => {
     userInput.value = '';
     scrollToBottom();
 
-    // Prepare the system message with analysis guidelines
-    const systemMessage = {
-      role: 'system',
-      content: `You are the TruthLens Assistant, the expert and friendly guide for the TruthLens platform. Your job is to help users analyze news articles, understand the results, and use the platform effectively to detect misinformation, bias, and emotional manipulation.
-
-Tu rol es ayudar a los usuarios a entender cómo funciona TruthLens y cómo interpretar los resultados del análisis de noticias. Siempre debes responder en el mismo idioma que el usuario (inglés o español).
-
-Your core roles / Tus funciones principales:
-
-1. Platform Guide / Guía de plataforma:
-   - Explain how to use the platform: paste an article, press "Analyze", and view the metrics.
-   - Explica cómo usar la plataforma: pegar un artículo, presionar "Analizar" y ver las métricas.
-   - Walk users through each section: Fake News %, Political Bias, Emotional Language, Article Style, Reader Recommendation.
-   - Explica cada sección: Porcentaje de Fake News, Sesgo Político, Lenguaje Emocional, Estilo del Artículo, Recomendación.
-
-2. NLP Techniques Used / Técnicas utilizadas:
-   TruthLens uses NLP and large language models to analyze news. It applies:
-   - Fake News Detection: factual consistency and speculative language.
-   - Detección de Fake News: consistencia factual y lenguaje especulativo.
-   - Political Bias: lexical patterns and ideological framing.
-   - Sesgo Político: patrones léxicos y encuadre ideológico.
-   - Emotional Tone: emotion classification (fear, joy, anger...).
-   - Tono Emocional: clasificación emocional (miedo, alegría, enojo...).
-   - Article Style: objective, subjective, speculative, emotive, clickbait.
-   - Estilo: objetivo, subjetivo, especulativo, emotivo, clickbait.
-   - Reader Recommendation: a summary to help users decide what to trust.
-   - Recomendación: una síntesis para decidir si confiar o no.
-
-3. Explanation / Explicación:
-   - Help users interpret results with examples.
-   - Ayuda a interpretar resultados con ejemplos.
-   - Warn about manipulative language or lack of sources.
-   - Advierte sobre lenguaje manipulado o falta de fuentes.
-
-4. Critical Thinking / Pensamiento Crítico:
-   - Encourage verifying claims with external sources.
-   - Fomentar la verificación con fuentes externas.
-   - Remind users that AI analysis is a tool, not a final verdict.
-   - Recordar que este análisis es una guía, no una verdad absoluta.
-
-5. Tone / Tono:
-   - Be clear, concise, helpful and neutral.
-   - Sé claro, conciso, útil y neutral.
-   - Structure answers with bullets or short paragraphs when helpful.
-   - Estructura tus respuestas con viñetas o párrafos cortos si ayuda.
-
-Always identify yourself as the TruthLens Assistant. / Siempre identifícate como el Asistente de TruthLens.`
-    };
-
     console.log('Sending message to:', getApiUrl('CHAT'));
     console.log('Request payload:', {
-      messages: [systemMessage, ...messages.value],
+      messages: messages.value,
       article_text: props.articleText || undefined,
       analysis_result: props.analysisResult || undefined
     });
@@ -248,7 +162,7 @@ Always identify yourself as the TruthLens Assistant. / Siempre identifícate com
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        messages: [systemMessage, ...messages.value],
+        messages: messages.value,
         article_text: props.articleText || undefined,
         analysis_result: props.analysisResult || undefined
       })
@@ -281,7 +195,7 @@ Always identify yourself as the TruthLens Assistant. / Siempre identifícate com
     });
     scrollToBottom();
     
-    // Asegurar que el input mantenga el foco después de enviar el mensaje
+    // Ensure input maintains focus after sending message
     nextTick(() => {
       handleInputFocus();
     });
@@ -291,7 +205,7 @@ Always identify yourself as the TruthLens Assistant. / Siempre identifícate com
       role: 'assistant',
       content: `Sorry, there was an error processing your message: ${error.message}. Please try again.`
     });
-    // Asegurar que el input mantenga el foco incluso después de un error
+    // Ensure input maintains focus even after an error
     nextTick(() => {
       handleInputFocus();
     });
@@ -318,59 +232,11 @@ const sendMessageWithWebSearch = async () => {
     userInput.value = '';
     scrollToBottom();
 
-    const systemMessage = {
-      role: 'system',
-      content: `You are the TruthLens Assistant, the expert and friendly guide for the TruthLens platform. Your job is to help users analyze news articles, understand the results, and use the platform effectively to detect misinformation, bias, and emotional manipulation.
-
-Tu rol es ayudar a los usuarios a entender cómo funciona TruthLens y cómo interpretar los resultados del análisis de noticias. Siempre debes responder en el mismo idioma que el usuario (inglés o español).
-
-Your core roles / Tus funciones principales:
-
-1. Platform Guide / Guía de plataforma:
-   - Explain how to use the platform: paste an article, press "Analyze", and view the metrics.
-   - Explica cómo usar la plataforma: pegar un artículo, presionar "Analizar" y ver las métricas.
-   - Walk users through each section: Fake News %, Political Bias, Emotional Language, Article Style, Reader Recommendation.
-   - Explica cada sección: Porcentaje de Fake News, Sesgo Político, Lenguaje Emocional, Estilo del Artículo, Recomendación.
-
-2. NLP Techniques Used / Técnicas utilizadas:
-   TruthLens uses NLP and large language models to analyze news. It applies:
-   - Fake News Detection: factual consistency and speculative language.
-   - Detección de Fake News: consistencia factual y lenguaje especulativo.
-   - Political Bias: lexical patterns and ideological framing.
-   - Sesgo Político: patrones léxicos y encuadre ideológico.
-   - Emotional Tone: emotion classification (fear, joy, anger...).
-   - Tono Emocional: clasificación emocional (miedo, alegría, enojo...).
-   - Article Style: objective, subjective, speculative, emotive, clickbait.
-   - Estilo: objetivo, subjetivo, especulativo, emotivo, clickbait.
-   - Reader Recommendation: a summary to help users decide what to trust.
-   - Recomendación: una síntesis para decidir si confiar o no.
-
-3. Explanation / Explicación:
-   - Help users interpret results with examples.
-   - Ayuda a interpretar resultados con ejemplos.
-   - Warn about manipulative language or lack of sources.
-   - Advierte sobre lenguaje manipulado o falta de fuentes.
-
-4. Critical Thinking / Pensamiento Crítico:
-   - Encourage verifying claims with external sources.
-   - Fomentar la verificación con fuentes externas.
-   - Remind users that AI analysis is a tool, not a final verdict.
-   - Recordar que este análisis es una guía, no una verdad absoluta.
-
-5. Tone / Tono:
-   - Be clear, concise, helpful and neutral.
-   - Sé claro, conciso, útil y neutral.
-   - Structure answers with bullets or short paragraphs when helpful.
-   - Estructura tus respuestas con viñetas o párrafos cortos si ayuda.
-
-Always identify yourself as the TruthLens Assistant. / Siempre identifícate como el Asistente de TruthLens.`
-    };
-
     const response = await fetch(getApiUrl('CHAT'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        messages: [systemMessage, ...messages.value],
+        messages: messages.value,
         article_text: props.articleText || undefined,
         analysis_result: props.analysisResult || undefined,
         use_web_search: true
@@ -405,11 +271,11 @@ function handleQuickPrompt(prompt) {
 
 // Watch for changes in articleText and analysisResult
 watch(() => props.articleText, (newText) => {
-  console.log('📄 Artículo actualizado:', newText ? 'Presente' : 'Ausente')
+  console.log('📄 Article updated:', newText ? 'Present' : 'Absent')
 }, { immediate: true })
 
 watch(() => props.analysisResult, (newResult) => {
-  console.log('📊 Análisis actualizado:', newResult ? 'Presente' : 'Ausente')
+  console.log('📊 Analysis updated:', newResult ? 'Present' : 'Absent')
 }, { immediate: true })
 
 // Watch for new messages to scroll
@@ -418,6 +284,17 @@ watch(messages, () => {
     scrollToBottom()
   })
 }, { deep: true })
+
+// Watch for mobile state changes to handle scroll lock
+watch(isMobile, (newIsMobile) => {
+  if (!newIsMobile && isOpen.value) {
+    // If switching from mobile to desktop while chat is open, unlock scroll
+    unlockScroll()
+  } else if (newIsMobile && isOpen.value) {
+    // If switching from desktop to mobile while chat is open, lock scroll
+    lockScroll()
+  }
+})
 
 // Animation methods
 const onEnter = (el) => {
@@ -449,18 +326,28 @@ function linkify(text) {
     '<a href="$1" target="_blank" rel="noopener noreferrer" class="underline text-blue-300 hover:text-blue-400 break-all">$1</a>'
   );
 }
+
+// Add method to handle input focus
+const handleInputFocus = () => {
+  if (inputRef.value) {
+    inputRef.value.focus()
+    // Ensure cursor is at the end of the input
+    const length = inputRef.value.value.length
+    inputRef.value.setSelectionRange(length, length)
+  }
+}
 </script>
 
 <template>
   <div :class="[
     standalone ? 'w-full h-full' : (isOpen ? 'fixed bottom-4 z-30' : 'fixed bottom-4 right-4 z-5')
   ]">
-    <!-- Toggle Button (solo si no es standalone) -->
+    <!-- Toggle Button (only if not standalone) -->
     <button
       v-if="!standalone && !isOpen"
       @click="toggleChat"
       class="bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-full p-3 md:p-4 shadow-lg transition-all duration-300 hover:opacity-90 hover:scale-105 active:scale-95 chat-button touch-manipulation"
-      :aria-label="'Abrir chat'"
+      :aria-label="'Open chat'"
       style="position: absolute; bottom: 0; right: 0; margin: 0 0 0 0;"
     >
       <div class="chat-button-glow"></div>
@@ -496,7 +383,6 @@ function linkify(text) {
         role="dialog"
         aria-modal="true"
         aria-label="Chat de TruthLens"
-        style="margin-top: 2rem;"
       >
         <!-- Header (solo si no es standalone) -->
         <div v-if="!standalone" class="flex-none w-full h-16 border-b border-white/10 bg-slate-800/95 flex items-center py-2 rounded-t-2xl shadow-md">
@@ -507,7 +393,7 @@ function linkify(text) {
             <button
               @click="toggleChat"
               class="close-btn-inset text-blue-200/80 hover:text-white transition-colors p-2 rounded-lg touch-manipulation"
-              aria-label="Cerrar chat"
+              aria-label="Close chat"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="close-svg-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
@@ -521,7 +407,7 @@ function linkify(text) {
           ref="messagesContainer"
           :class="[
             'flex-1 overflow-y-auto space-y-3 scroll-smooth',
-            standalone ? 'min-h-[420px] md:min-h-[500px] bg-slate-900/95 rounded-2xl p-6 md:p-8' : 'px-6 py-6 bg-slate-900/95'
+            standalone ? 'min-h-[390px] md:min-h-[300px] bg-slate-900/95 rounded-2xl p-6 md:p-8' : 'px-6 py-6 bg-slate-900/95'
           ]"
           role="log"
           aria-live="polite"
@@ -582,22 +468,37 @@ function linkify(text) {
           <slot />
         </div>
 
-        <!-- Quick prompts abajo, fuera del área de mensajes, solo en standalone -->
+        <!-- Quick prompts below, outside the messages area, only in standalone mode -->
         <div v-if="standalone" class="w-full flex gap-2 justify-center items-center px-4 pb-2 mt-2">
           <button
-            v-for="prompt in quickPrompts"
+            v-for="prompt in CHAT_CONFIG.QUICK_PROMPTS"
             :key="prompt.label"
             @click="handleQuickPrompt(prompt)"
             class="flex items-center gap-2 px-3 py-3 rounded-lg border border-cyan-400/20 bg-slate-800/80 text-sm font-medium text-white shadow hover:bg-slate-800/95 hover:border-cyan-400/60 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 flex-1 min-w-0"
           >
-            <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v6m0 6v6m9-9h-6m-6 0H3m13.07-6.93l-4.24 4.24m0 0l-4.24-4.24m8.48 8.48l-4.24 4.24m0 0l-4.24-4.24" stroke-linecap="round"/></svg>
-            {{ prompt.label }}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 text-cyan-400 hidden sm:block"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+              />
+            </svg>
+            <span>{{ prompt.label }}</span>
           </button>
         </div>
 
         <!-- Input Area -->
-        <div class="flex-none w-full px-4 py-3 bg-gradient-to-r from-slate-800/95 to-slate-700/95 border-t border-white/10 flex items-center rounded-b-none md:rounded-b-2xl shadow-lg">
-          <form @submit.prevent="sendMessage" class="flex w-full items-center gap-2">
+        <div
+          class="flex-none w-full px-4 py-3 bg-gradient-to-r from-slate-800/95 to-slate-700/95 border-t border-white/10 flex items-center rounded-b-none md:rounded-b-2xl shadow-lg"
+        >
+          <form @submit.prevent="sendMessage" class="flex flex-wrap sm:flex-nowrap w-full items-center gap-2">
             <input
               ref="inputRef"
               v-model="userInput"
@@ -609,11 +510,11 @@ function linkify(text) {
               aria-label="Message"
               autocomplete="off"
             />
-            <div class="flex gap-2">
+            <div class="flex gap-2 w-full sm:w-auto">
               <button
                 type="submit"
                 :disabled="isLoading || !userInput.trim()"
-                class="btn-inset flex flex-col items-center justify-center"
+                class="btn-inset flex flex-col items-center justify-center w-full sm:w-auto"
                 aria-label="Send message"
                 title="Send"
               >
@@ -626,7 +527,7 @@ function linkify(text) {
                 type="button"
                 @click="sendMessageWithWebSearch"
                 :disabled="isLoading || !userInput.trim()"
-                class="btn-inset flex flex-col items-center justify-center"
+                class="btn-inset flex flex-col items-center justify-center w-full sm:w-auto"
                 aria-label="Verify with sources"
                 title="Verify with sources from the web"
               >
@@ -860,16 +761,16 @@ button:active {
 
 /* Mobile-specific styles */
 @media (max-width: 768px) {
-  /* Chat window ocupa toda la pantalla - ELIMINAR */
+  /* Chat window ocupa toda la pantalla */
   .w-full.h-full.md\:w-\[450px\].md\:h-\[600px\].md\:bottom-8.md\:right-8.md\:fixed {
     width: 100vw !important;
     max-width: 100vw !important;
-    height: 100vh !important;
-    max-height: 100vh !important;
+    height: calc(100vh - 120px) !important;
+    max-height: calc(100vh - 120px) !important;
     border-radius: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    top: 0 !important;
+    top: 120px !important;
     bottom: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
@@ -877,14 +778,14 @@ button:active {
     z-index: 1050 !important;
   }
 
-  /* Contenedor principal ocupa toda la pantalla y z-index alto - ELIMINAR */
+  /* Contenedor principal ocupa toda la pantalla y z-index alto */
   .fixed.bottom-4.z-10,
   .fixed.bottom-4.right-4.z-30 {
     width: 100vw !important;
-    height: 100vh !important;
+    height: calc(100vh - 120px) !important;
     left: 0 !important;
     right: 0 !important;
-    top: 0 !important;
+    top: 120px !important;
     bottom: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -901,6 +802,14 @@ button:active {
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  /* Contenedor standalone también ajustado */
+  .w-full.h-full.bg-transparent.border-none.shadow-none.rounded-none.flex.flex-col {
+    height: calc(100vh - 120px) !important;
+    max-height: calc(100vh - 120px) !important;
+    margin-top: 120px !important;
+    z-index: 1050 !important;
   }
 
   /* Más espacio para el primer mensaje en mobile */
@@ -1439,4 +1348,23 @@ input {
       0 0 0 2px rgba(56, 189, 248, 0.12);
   }
 }
-</style> 
+
+/* Equalize font size and padding in user and assistant messages */
+.user-bubble, .assistant-bubble {
+  font-size: 0.875rem;
+  padding: 1rem;
+}
+
+/* Larger and more spaced messages */
+@media (min-width: 768px) {
+  .user-bubble, .assistant-bubble {
+    font-size: 1rem;
+    padding: 1.25rem;
+  }
+}
+
+/* Professional SVG icon for messages */
+.chat-icon {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+</style>

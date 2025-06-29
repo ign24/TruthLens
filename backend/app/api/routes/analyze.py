@@ -6,6 +6,7 @@ import logging
 from typing import Optional
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from ...services.storage_service import StorageService
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 openai_service = OpenAIService()
 limiter = Limiter(key_func=get_remote_address)
+storage_service = StorageService()
 
 @router.post(
     "/analyze",
@@ -58,7 +60,12 @@ async def analyze_text(
             url=body.url,
             title=body.title
         )
-        
+        # Save input and result to database
+        storage_service.save_analysis(
+            tipo_analisis="texto",
+            input_original=body.text,
+            resultado=result.dict()
+        )
         logger.info(f"Analysis completed successfully for URL: {body.url}")
         return result
         

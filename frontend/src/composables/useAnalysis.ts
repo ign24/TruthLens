@@ -9,7 +9,7 @@ interface AnalysisResult {
   analysis_explanation?: string;
 }
 
-console.log('Using backend: https://truthlens-backend-production.up.railway.app');
+console.log('Using backend:', getApiUrl('ANALYZE'));
 
 export function useAnalysis() {
   const result = ref<AnalysisResult | null>(null);

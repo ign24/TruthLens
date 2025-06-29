@@ -14,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/analyze',
     name: 'analyze',
-    component: () => import('../views/HomeView.vue')
+    component: () => import('../views/TextAnalysisView.vue')
   },
   {
     path: '/chatbot',
@@ -40,7 +40,10 @@ const routes: Array<RouteRecordRaw> = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior() {
+    return { top: 0 };
+  }
 })
 
 export default router 

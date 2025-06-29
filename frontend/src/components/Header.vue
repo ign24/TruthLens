@@ -9,16 +9,35 @@ const isClosing = ref(false);
 const route = useRoute();
 const openSidebar = ref(false);
 
+// Store original body overflow to restore it later
+const originalBodyOverflow = ref('');
+
+// Define an interface for the link objects for strong typing
+interface NavLink {
+  name: string;
+  href: string;
+  external?: boolean;
+}
+
 // Navigation links configuration
-const links = [
+const links: NavLink[] = [
   { name: 'Home', href: '/landing' },
   { name: 'Analyze', href: '/analyze' },
   { name: 'Image Analysis', href: '/image-analysis' },
   { name: 'Translator Pro', href: '/translator' },
   { name: 'ChatBot', href: '/chatbot' },
-  { name: 'Voice Chat', href: '/voice-chat' },
-  { name: 'Docs', href: 'https://truthlens-backend-production.up.railway.app/docs', external: true }
+  { name: 'Voice Chat', href: '/voice-chat' }
 ];
+
+// Scroll lock management
+const lockScroll = () => {
+  originalBodyOverflow.value = document.body.style.overflow || '';
+  document.body.style.overflow = 'hidden';
+}
+
+const unlockScroll = () => {
+  document.body.style.overflow = originalBodyOverflow.value;
+}
 
 /**
  * Toggle the help modal with smooth animation
@@ -27,13 +46,37 @@ const links = [
 const toggleHelp = () => {
   if (showHelp.value) {
     isClosing.value = true;
+    unlockScroll();
     setTimeout(() => {
       showHelp.value = false;
       isClosing.value = false;
     }, 300); // Match the transition duration
   } else {
     showHelp.value = true;
+    lockScroll();
   }
+};
+
+/**
+ * Toggle the mobile sidebar
+ */
+const toggleSidebar = (open: boolean) => {
+  openSidebar.value = open;
+  if (open) {
+    lockScroll();
+  } else {
+    unlockScroll();
+  }
+};
+
+/**
+ * Close sidebar and optionally toggle help
+ */
+const closeSidebarAndToggleHelp = () => {
+  toggleSidebar(false);
+  setTimeout(() => {
+    toggleHelp();
+  }, 100); // Small delay to ensure sidebar closes first
 };
 </script>
 
@@ -94,7 +137,7 @@ const toggleHelp = () => {
           </a>
         </div>
         <!-- Mobile Hamburger -->
-        <button @click="openSidebar = true" class="md:hidden focus:outline-none">
+        <button @click="toggleSidebar(true)" class="md:hidden focus:outline-none">
           <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
@@ -105,7 +148,7 @@ const toggleHelp = () => {
     <transition name="fade">
       <aside v-if="openSidebar" class="fixed inset-0 z-50 flex">
         <div class="bg-gray-900 w-64 p-6 space-y-6 h-full shadow-2xl">
-          <button @click="openSidebar = false" class="mb-4 text-right w-full">
+          <button @click="toggleSidebar(false)" class="mb-4 text-right w-full">
             <svg class="w-6 h-6 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -117,7 +160,7 @@ const toggleHelp = () => {
               target="_blank"
               rel="noopener noreferrer"
               class="block py-2 text-blue-200/80 hover:text-white transition-colors duration-200"
-              @click="openSidebar = false"
+              @click="toggleSidebar(false)"
             >
               {{ link.name }}
             </a>
@@ -126,13 +169,13 @@ const toggleHelp = () => {
               :to="link.href"
               class="block py-2 text-blue-200/80 hover:text-white transition-colors duration-200"
               :class="{ 'text-white': route.path === link.href }"
-              @click="openSidebar = false"
+              @click="toggleSidebar(false)"
             >
               {{ link.name }}
             </RouterLink>
           </template>
           <button
-            @click="() => { openSidebar = false; toggleHelp(); }"
+            @click="closeSidebarAndToggleHelp"
             class="block py-2 text-blue-200/80 hover:text-white transition-colors duration-200 w-full text-left"
           >
             Help
@@ -142,7 +185,7 @@ const toggleHelp = () => {
             <span>Made with Bolt</span>
           </a>
         </div>
-        <div class="flex-1 bg-black bg-opacity-60" @click="openSidebar = false"></div>
+        <div class="flex-1 bg-black bg-opacity-60" @click="toggleSidebar(false)"></div>
       </aside>
     </transition>
   </header>

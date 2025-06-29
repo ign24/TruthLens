@@ -8,9 +8,11 @@ import piexif
 import logging
 from ..services.image_analysis import analyze_image_spectrum, extract_metadata
 from ..services.openai_service import OpenAIService
+from ..services.storage_service import StorageService
 
 router = APIRouter()
 openai_service = OpenAIService()
+storage_service = StorageService()
 logger = logging.getLogger("image_analysis")
 
 def resize_image(img: Image.Image, max_size: int = 1024) -> Image.Image:
@@ -61,7 +63,12 @@ async def analyze_image(image: UploadFile = File(...)):
             metadata=metadata
         )
         logger.info(f"[ImageAnalysis] Respuesta recibida de OpenAI: {analysis}")
-        
+        # Guardar input y resultado en la base de datos
+        storage_service.save_analysis(
+            tipo_analisis="imagen",
+            input_original=image.filename,
+            resultado=analysis
+        )
         return analysis
         
     except Exception as e:

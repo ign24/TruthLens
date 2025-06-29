@@ -19,8 +19,13 @@ def get_analysis_prompt(text: str, url: Optional[str] = None, title: Optional[st
     if title:
         context += f"\nTitle: {title}\n"
 
-    return f"""Analyze the following text for factual accuracy, bias, emotional tone, and provide a detailed analysis.
+    return f"""Analyze the following text for factual accuracy, political bias, emotional tone, and article structure. Base your evaluation on established variables and constructs from DOCA (Database of Variables for Content Analysis), especially those used in automated content analysis of journalistic texts.
+
 {context}
+
+Identify the main topic of the article from the following list and return it as the field "topic": politics, economy, health, technology, culture, sports, environment, crime, international, education, other.
+
+Based on the article, identify any applicable framing categories used to present the topic. Choose from: crisis, conflict, human_interest, responsibility, morality, solution, economic_consequences, security, none. Return them as an array in the field "frames_detected".
 
 Return your analysis as a valid JSON object with ALL the following fields, even if some values are zero, empty, or not applicable. Do NOT omit any field. Use the exact structure and field names below:
 
@@ -29,6 +34,8 @@ Return your analysis as a valid JSON object with ALL the following fields, even 
     "bias": <one of: \"neutral\", \"center-left\", \"left-leaning\", \"center-right\", \"right-leaning\", \"anti-government\", \"pro-government\", \"other\">,
     "emotional_tone": <one of: \"neutral\", \"positive\", \"negative\", \"mixed\">,
     "recommendation": <string>,
+    "topic": <one of: \"politics\", \"economy\", \"health\", \"technology\", \"culture\", \"sports\", \"environment\", \"crime\", \"international\", \"education\", \"other\">,
+    "frames_detected": [<any of: \"crisis\", \"conflict\", \"human_interest\", \"responsibility\", \"morality\", \"solution\", \"economic_consequences\", \"security\">],
     "article_type": {{
         "objective": <float 0-1>,
         "subjective": <float 0-1>,
@@ -89,22 +96,6 @@ def get_system_prompt() -> str:
         str: The system prompt
     """
     return """You are an expert in news verification and objectivity analysis. Use clear and accessible language for the general public. For bias analysis, use EXACTLY one of the specified classifications."""
-
-def get_chat_system_prompt() -> str:
-    """
-    Get the system prompt for chat interactions.
-    
-    Returns:
-        str: The system prompt
-    """
-    return """You are an assistant specialized in news analysis and AI explainability for journalists.
-- If the user explicitly asks about the analysis, scores (factual accuracy, bias, emotional tone, recommendations), or requests explanations about the analysis result, use the context of the article and analysis_result to answer clearly, briefly, and educationally.
-- If the user asks about sources, suggest how to find reliable information or how to fact-check.
-- If the user asks about emotions, explain how they were detected and what they mean in the context of the article.
-- If the user does NOT mention anything related to the analysis, respond as a conversational journalistic assistant specialized in text analysis, but do NOT mention the analysis unless it is relevant to the question.
-- Do not repeat unnecessary information and keep answers brief and useful.
-- Always respond in English unless the user's input is in Spanish; in that case, respond in Spanish.
-Remember: Only use the analysis_result and article_text if the user's question requires it."""
 
 def get_web_search_instructions() -> str:
     """

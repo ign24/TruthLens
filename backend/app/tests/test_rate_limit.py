@@ -1,7 +1,8 @@
 import requests
 import time
+from app.core.config import settings
 
-API_URL = "http://localhost:8000/api/analyze"
+API_URL = f"{settings.TEST_API_BASE_URL}/api/analyze"
 headers = {"Content-Type": "application/json"}
 payload = {
     "input_text": "The government announced a new climate policy today."

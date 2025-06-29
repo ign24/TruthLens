@@ -1,18 +1,14 @@
 // API Configuration
-const ENV = import.meta.env.VITE_ENV || 'development';
-const DEFAULT_API_URL = ENV === 'production' 
-  ? 'https://truthlens-backend-production.up.railway.app'
-  : 'http://localhost:8000'; // Backend runs on port 8000
+import { ENV_CONFIG, getApiUrl as getBaseApiUrl, getFrontendUrl, isDevelopment } from './environment';
 
 // Get API URL from environment or use default
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || DEFAULT_API_URL;
+export const API_BASE_URL = getBaseApiUrl();
+
+// Frontend URL configuration
+export const FRONTEND_URL = getFrontendUrl();
 
 // API Endpoints configuration
-export const API_ENDPOINTS = {
-  CHAT: '/api/v1/chat',
-  ANALYZE: '/api/v1/analyze',
-  HEALTH: '/api/v1/health'
-} as const;
+export const API_ENDPOINTS = ENV_CONFIG.ENDPOINTS;
 
 // Helper function to get full API URL
 export const getApiUrl = (endpoint: keyof typeof API_ENDPOINTS) => {
@@ -27,7 +23,7 @@ export const checkApiHealth = async () => {
   /* Original implementation commented out
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), ENV_CONFIG.API.TIMEOUT);
 
     const response = await fetch(getApiUrl('HEALTH'), {
       signal: controller.signal,
@@ -51,10 +47,9 @@ export const checkApiHealth = async () => {
 
 // Log current API configuration
 console.log('API Configuration:', {
-  environment: ENV,
+  environment: ENV_CONFIG.ENV,
   baseUrl: API_BASE_URL,
+  frontendUrl: FRONTEND_URL,
   endpoints: API_ENDPOINTS,
-  isLocal: ENV === 'development',
-  frontendPort: 8000,
-  backendPort: 5000
+  isLocal: isDevelopment()
 }); 

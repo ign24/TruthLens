@@ -1,9 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import Header from '../components/Header.vue';
 import SimpleBar from 'simplebar-vue';
 import Tooltip from '../components/Tooltip.vue';
 import ChatBot from '../components/ChatBot.vue';
+import { getApiUrl, API_BASE_URL } from '../config/api';
+import { useAudioOptimization } from '../composables/useAudioOptimization';
+import { useMobileDetection } from '../composables/useMobileDetection';
+
+// Audio optimization
+const { isMobile, resumeAudioContext } = useAudioOptimization();
+
+// Mobile detection for ChatBot visibility
+const { isMobile: isMobileDevice } = useMobileDetection();
 
 const sourceText = ref('');
 const translatedText = ref('');
@@ -164,7 +173,7 @@ const translate = async () => {
       translation_mode: translationMode.value,
     };
     console.log('Payload sent to backend (translate):', payload);
-    const response = await fetch('http://localhost:8000/api/v1/translator/translate', {
+    const response = await fetch(getApiUrl('TRANSLATE'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -202,7 +211,7 @@ const translateWithVoice = async () => {
       translation_mode: translationMode.value || "literal",
     };
     console.log('Payload sent to backend (translateWithVoice):', payload);
-    const response = await fetch('http://localhost:8000/api/v1/translator/translate-voice', {
+    const response = await fetch(getApiUrl('TRANSLATE_VOICE'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -216,9 +225,8 @@ const translateWithVoice = async () => {
 
     const data = await response.json();
     translatedText.value = data.translated_text || 'No translation received.';
-    const backendBase = "http://localhost:8000";
     audioUrl.value = data.audio_url && data.audio_url.startsWith("/")
-      ? backendBase + data.audio_url
+      ? API_BASE_URL + data.audio_url
       : data.audio_url;
   } catch (error) {
     console.error('Translation error:', error);
@@ -229,12 +237,20 @@ const translateWithVoice = async () => {
   }
 };
 
-const togglePlay = () => {
+const togglePlay = async () => {
   if (!audioRef.value) return;
+  
   if (isPlaying.value) {
     audioRef.value.pause();
   } else {
-    audioRef.value.play();
+    // Resume audio context for mobile
+    await resumeAudioContext();
+    
+    // Optimize audio for mobile
+    if (isMobile.value) {
+      audioRef.value.volume = 1.0; // Full volume on mobile
+    }
+    audioRef.value.play().catch(e => console.warn('Audio play failed:', e));
   }
 };
 
@@ -260,6 +276,16 @@ function formatTime(sec: number) {
   const s = Math.floor(sec % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
+
+// Lifecycle hooks
+onMounted(async () => {
+  // Resume audio context for mobile
+  await resumeAudioContext();
+});
+
+onUnmounted(() => {
+  // Cleanup code if needed
+});
 </script>
 
 <template>
@@ -268,17 +294,17 @@ function formatTime(sec: number) {
     <Header />
 
     <!-- Main content area: padding-top prevents overlap with fixed header -->
-    <div class="px-2 text-white pt-[100px]">
+    <div class="px-2 text-white pt-20 sm:pt-28 md:pt-[100px]">
       <!-- Centered container for the translator UI -->
       <div class="w-full max-w-3xl mx-auto py-4">
         <!-- Title and subtitle section -->
         <div class="text-center mb-3">
-          <h1 class="font-display text-5xl font-bold mb-2 relative animate-fade-in">
+          <h1 class="font-display text-4xl sm:text-5xl font-bold mb-2 relative animate-fade-in">
             <span class="bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300 bg-clip-text text-transparent bg-[length:200%_200%] animate-gradient">
               TruthLens Translator Pro
             </span>
           </h1>
-          <p class="text-lg text-blue-200/80 font-display tracking-wide animate-fade-in-delay mb-6">
+          <p class="text-base sm:text-lg text-blue-200/80 font-display tracking-wide animate-fade-in-delay mb-6">
             Professional-grade translation with context awareness
           </p>
         </div>
@@ -418,11 +444,11 @@ function formatTime(sec: number) {
           </transition>
         </div>
         <!-- Action buttons: swap, translate, translate & speak -->
-        <div class="flex justify-center gap-2 mt-4">
+        <div class="flex flex-col sm:flex-row justify-center gap-2 mt-4">
           <!-- Swap languages button -->
           <button
             @click="swapLanguages"
-            class="flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30"
+            class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30"
             :disabled="isTranslating"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -432,9 +458,9 @@ function formatTime(sec: number) {
           </button>
           <!-- Translate button -->
           <Tooltip v-if="translationMode === null" text="Select a translation mode first." position="top">
-            <span>
+            <span class="w-full sm:w-auto">
               <button
-                class="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 opacity-50 cursor-not-allowed"
+                class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 opacity-50 cursor-not-allowed"
                 disabled
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -447,7 +473,7 @@ function formatTime(sec: number) {
           <button
             v-else
             @click="translate"
-            class="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="!canTranslate"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -457,9 +483,9 @@ function formatTime(sec: number) {
           </button>
           <!-- Translate & Speak button (with tooltip if not available or no mode) -->
           <Tooltip v-if="translationMode === null" text="Select a translation mode first." position="top">
-            <span>
+            <span class="w-full sm:w-auto">
               <button
-                class="flex items-center gap-1.5 px-4 py-2 bg-cyan-600 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 opacity-50 cursor-not-allowed"
+                class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-cyan-600 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 opacity-50 cursor-not-allowed"
                 disabled
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -470,9 +496,9 @@ function formatTime(sec: number) {
             </span>
           </Tooltip>
           <Tooltip v-else-if="!canSpeak" text="Audio is not available for this language." position="top">
-            <span>
+            <span class="w-full sm:w-auto">
               <button
-                class="flex items-center gap-1.5 px-4 py-2 bg-cyan-600 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 opacity-50 cursor-not-allowed"
+                class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-cyan-600 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 opacity-50 cursor-not-allowed"
                 disabled
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -485,7 +511,7 @@ function formatTime(sec: number) {
           <button
             v-else
             @click="translateWithVoice"
-            class="flex items-center gap-1.5 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="!canTranslate || isGeneratingVoice"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -537,22 +563,26 @@ function formatTime(sec: number) {
         </div>
       </div>
     </div>
+    
     <!-- ChatBot assistant at the bottom -->
-    <ChatBot />
-    <div class="mt-12 max-w-2xl mx-auto">
-      <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 rounded-2xl shadow-xl border border-cyan-400/20 p-8 mb-8 flex flex-col items-start">
+    <ChatBot v-if="!isMobileDevice" />
+    
+    <!-- Tarjeta informativa del Translator -->
+    <div class="mt-8 sm:mt-12 max-w-2xl mx-auto px-4 sm:px-0">
+      <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 rounded-2xl shadow-xl border border-cyan-400/20 p-6 sm:p-8 mb-8 flex flex-col items-start">
         <div class="flex items-center mb-4">
-          <svg class="w-7 h-7 text-cyan-300 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v6m0 6v6m9-9h-6m-6 0H3m13.07-6.93l-4.24 4.24m0 0l-4.24-4.24m8.48 8.48l-4.24 4.24m0 0l-4.24-4.24" stroke-linecap="round"/></svg>
-          <h2 class="text-2xl font-bold text-white">TruthLens Translator Pro</h2>
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-cyan-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+          </svg>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">TruthLens Translator Pro</h2>
         </div>
-        <p class="text-slate-200 mb-3">Break language barriers and verify content worldwide. Translator Pro lets you:</p>
-        <ul class="list-disc list-inside text-slate-300 mb-3">
-          <li>Translate articles, quotes, and documents in real time</li>
-          <li>Preserve context, tone, and factual accuracy</li>
-          <li>Detect manipulative language across languages</li>
+        <p class="text-slate-200 mb-3 text-base">Break language barriers and verify content worldwide. Translator Pro lets you:</p>
+        <ul class="list-disc list-inside text-slate-300 mb-3 text-base">
+          <li>Translate articles, quotes, and documents</li>
+          <li>Preserve context, tone, and intended meaning</li>
           <li>Instantly switch between 50+ languages</li>
         </ul>
-        <p class="text-slate-200">Empower your research and fact-checking with advanced, context-aware translation.</p>
+        <p class="text-slate-200 text-base">Empower your research and fact-checking with advanced, context-aware translation.</p>
       </div>
     </div>
   </div>

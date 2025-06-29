@@ -1,7 +1,8 @@
 import requests
 import json
+from app.core.config import settings
 
-API_URL = "http://localhost:8000/api/v1/chat"
+API_URL = f"{settings.TEST_API_BASE_URL}/api/v1/chat"
 headers = {"Content-Type": "application/json"}
 
 # Test case 1: Verificar una noticia

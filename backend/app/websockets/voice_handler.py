@@ -15,6 +15,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.websockets import WebSocketState
 import tempfile
 import subprocess
+from app.core.config import settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,12 +25,10 @@ class VoiceAssistantManager:
     """Manages voice assistant connections and ElevenLabs integration"""
     
     def __init__(self):
-        self.elevenlabs_api_key = os.getenv("ELEVENLABS_API_KEY")
-        self.elevenlabs_agent_id = os.getenv("AGENT_ID")
-        logging.info(f"[DEBUG] ELEVENLABS_API_KEY: {self.elevenlabs_api_key}")
-        logging.info(f"[DEBUG] AGENT_ID: {self.elevenlabs_agent_id}")
-        self.elevenlabs_base_url = "https://api.elevenlabs.io/v1"
-        self.model_id = "flash_v2.5"  # Low-latency model
+        self.elevenlabs_api_key = settings.ELEVENLABS_API_KEY
+        self.elevenlabs_agent_id = settings.ELEVENLABS_AGENT_ID
+        self.elevenlabs_base_url = settings.ELEVENLABS_BASE_URL
+        self.model_id = settings.ELEVENLABS_MODEL_ID  # Low-latency model
         
         # System prompt for the voice assistant
         self.system_prompt = """You are Alex, the voice assistant for TruthLens. 
@@ -45,7 +44,7 @@ class VoiceAssistantManager:
         logger.info("Voice WebSocket connection established")
         
         try:
-            # 1. Obtener signed_url de ElevenLabs
+            # 1. Get signed_url from ElevenLabs
             signed_url = await self._get_signed_url()
             if not signed_url:
                 await websocket.send_text(json.dumps({
@@ -56,13 +55,13 @@ class VoiceAssistantManager:
                 return
             logger.info("Obtained signed_url from ElevenLabs")
 
-            # 2. Abrir WebSocket a ElevenLabs
+            # 2. Open WebSocket to ElevenLabs
             async with websockets.connect(signed_url) as eleven_ws:
                 await websocket.send_text(json.dumps({
                     "type": "status",
                     "message": "Voice assistant connected and ready"
                 }))
-                # 3. Lanzar tareas para reenviar mensajes en ambos sentidos
+                # 3. Launch tasks to forward messages in both directions
                 user_to_eleven = asyncio.create_task(self._forward_user_to_eleven(websocket, eleven_ws))
                 eleven_to_user = asyncio.create_task(self._forward_eleven_to_user(websocket, eleven_ws))
                 done, pending = await asyncio.wait(
@@ -99,40 +98,40 @@ class VoiceAssistantManager:
         while True:
             try:
                 data = await websocket.receive_text()
-                logger.info(f"[PROXY] Mensaje recibido del usuario: {data[:100]}...")
+                logger.info(f"[PROXY] Message received from user: {data[:100]}...")
                 message = json.loads(data)
 
                 if message.get("type") == "user_audio_chunk":
                     if not all(k in message for k in ["audio", "audio_format"]):
-                        logger.error("Mensaje de audio incompleto")
+                        logger.error("Incomplete audio message")
                         continue
 
-                    # Si el audio viene en webm, convertir a PCM 16kHz 16-bit
+                    # If audio comes in webm format, convert to PCM 16kHz 16-bit
                     if message["audio_format"] == "webm":
-                        logger.info("Convirtiendo audio webm a PCM 16kHz 16-bit...")
+                        logger.info("Converting webm audio to PCM 16kHz 16-bit...")
                         pcm_b64 = self._convert_webm_base64_to_pcm_base64(message["audio"])
                         if not pcm_b64:
-                            logger.error("Error al convertir webm a PCM")
+                            logger.error("Error converting webm to PCM")
                             continue
                         await eleven_ws.send(json.dumps({
                             "type": "user_audio_chunk",
                             "audio": pcm_b64,
                             "audio_format": "pcm_16000"
                         }))
-                        logger.info("[PROXY] Audio chunk PCM enviado a ElevenLabs")
+                        logger.info("[PROXY] PCM audio chunk sent to ElevenLabs")
                     elif message["audio_format"] == "pcm_16000":
                         await eleven_ws.send(json.dumps({
                             "type": "user_audio_chunk",
                             "audio": message["audio"],
                             "audio_format": "pcm_16000"
                         }))
-                        logger.info("[PROXY] Audio chunk PCM enviado a ElevenLabs (ya en formato correcto)")
+                        logger.info("[PROXY] PCM audio chunk sent to ElevenLabs (already in correct format)")
                     else:
-                        logger.error(f"[PROXY] Formato de audio no soportado: {message['audio_format']}")
+                        logger.error(f"[PROXY] Unsupported audio format: {message['audio_format']}")
                         continue
                 else:
                     await eleven_ws.send(data)
-                    logger.info(f"[PROXY] Otro tipo de mensaje enviado a ElevenLabs: {message.get('type')}")
+                    logger.info(f"[PROXY] Other type of message sent to ElevenLabs: {message.get('type')}")
             except Exception as e:
                 logger.error(f"Error forwarding user->eleven: {e}")
                 break
@@ -144,7 +143,7 @@ class VoiceAssistantManager:
                 webm_file.write(webm_bytes)
                 webm_path = webm_file.name
             pcm_path = webm_path.replace('.webm', '.pcm')
-            # ffmpeg: convertir a PCM 16kHz 16-bit mono
+            # ffmpeg: convert to PCM 16kHz 16-bit mono
             cmd = [
                 'ffmpeg', '-y', '-i', webm_path,
                 '-ac', '1', '-ar', '16000', '-f', 's16le', pcm_path
@@ -152,60 +151,60 @@ class VoiceAssistantManager:
             subprocess.run(cmd, check=True)
             with open(pcm_path, 'rb') as pcm_file:
                 pcm_bytes = pcm_file.read()
-            # Limpiar archivos temporales
+            # Clean temporary files
             os.remove(webm_path)
             os.remove(pcm_path)
             return base64.b64encode(pcm_bytes).decode('utf-8')
         except Exception as e:
-            logger.error(f"Error en conversión ffmpeg: {e}")
+            logger.error(f"Error in ffmpeg conversion: {e}")
             return None
 
     async def _forward_eleven_to_user(self, websocket: WebSocket, eleven_ws):
         while True:
             try:
                 data = await eleven_ws.recv()
-                logger.info(f"[PROXY] Mensaje recibido de ElevenLabs: {data[:100]}...")  # Solo log los primeros 100 caracteres
+                logger.info(f"[PROXY] Message received from ElevenLabs: {data[:100]}...")  # Only log first 100 characters
                 
-                # Parsear el mensaje JSON
+                # Parse the JSON message
                 message = json.loads(data)
                 message_type = message.get("type")
                 
-                # Manejar diferentes tipos de mensajes
+                # Handle different message types
                 if message_type == "ping":
-                    # Ignorar pings, son solo para mantener la conexión viva
+                    # Ignore pings, they're just to keep the connection alive
                     continue
                 elif message_type == "audio":
-                    # Verificar que tenemos el audio
+                    # Verify we have the audio
                     audio_data = message.get("audio")
                     if not audio_data:
-                        logger.error("Mensaje de audio sin datos de audio")
+                        logger.error("Audio message without audio data")
                         continue
                         
-                    # Enviar audio al cliente
+                    # Send audio to client
                     response = {
                         "type": "audio_response",
                         "audio": audio_data,
                         "audio_format": message.get("audio_format", "mp3_44100_128")
                     }
-                    logger.info(f"[PROXY] Enviando respuesta de audio al usuario (tamaño: {len(audio_data)})")
+                    logger.info(f"[PROXY] Sending audio response to user (size: {len(audio_data)})")
                     await websocket.send_text(json.dumps(response))
                 elif message_type == "error":
                     error_msg = message.get("message", "Error from ElevenLabs")
-                    logger.error(f"[PROXY] Error de ElevenLabs: {error_msg}")
+                    logger.error(f"[PROXY] ElevenLabs error: {error_msg}")
                     await websocket.send_text(json.dumps({
                         "type": "error",
                         "message": error_msg
                     }))
                 elif message_type == "conversation_initiation_metadata":
-                    logger.info("[PROXY] Metadata de inicialización recibida")
+                    logger.info("[PROXY] Initialization metadata received")
                     await websocket.send_text(data)
                 else:
-                    # Log y reenviar otros tipos de mensajes
-                    logger.info(f"[PROXY] Mensaje no manejado de tipo: {message_type}")
+                    # Log and re-send other types of messages
+                    logger.info(f"[PROXY] Unhandled message type: {message_type}")
                     await websocket.send_text(data)
                 
             except json.JSONDecodeError as e:
-                logger.error(f"Error decodificando JSON de ElevenLabs: {e}")
+                logger.error(f"Error decoding JSON from ElevenLabs: {e}")
                 continue
             except Exception as e:
                 logger.error(f"Error forwarding eleven->user: {e}")
@@ -255,8 +254,6 @@ class VoiceAssistantManager:
     async def _process_with_elevenlabs(self, audio_data: str, audio_format: str) -> Optional[str]:
         """Process audio with ElevenLabs and return response audio"""
         try:
-            logging.info(f"[DEBUG] Using ELEVENLABS_API_KEY: {self.elevenlabs_api_key}")
-            logging.info(f"[DEBUG] Using AGENT_ID: {self.elevenlabs_agent_id}")
             if not self.elevenlabs_api_key or not self.elevenlabs_agent_id:
                 logger.error("ElevenLabs credentials not configured")
                 return None

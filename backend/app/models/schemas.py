@@ -38,6 +38,8 @@ class AnalysisResponse(BaseModel):
         analysis_explanation: Optional detailed breakdown of the analysis
         article_type: Optional classification of the article type with confidence scores
         sentiments: Optional sentiment analysis scores for different aspects
+        topic: Main topic of the article (DOCA)
+        frames_detected: List of detected frames (DOCA)
     """
     factual_accuracy: int = Field(..., ge=0, le=100)
     bias: str
@@ -46,6 +48,8 @@ class AnalysisResponse(BaseModel):
     analysis_explanation: Optional[Dict[str, Any]] = Field(default=None, description="Detailed analysis explanation")
     article_type: Optional[Dict[str, float]] = None
     sentiments: Optional[Dict[str, float]] = None
+    topic: Optional[str] = Field(default=None, description="Main topic of the article (DOCA)")
+    frames_detected: Optional[List[str]] = Field(default=None, description="List of detected frames (DOCA)")
 
 class ChatMessage(BaseModel):
     """

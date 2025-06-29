@@ -3,7 +3,7 @@
     <div class="space-y-6">
         <!-- Article Type Analysis Section -->
         <div v-if="articleType" class="space-y-3">
-            <h3 class="text-lg font-semibold text-blue-300">Article Type Distribution</h3>
+            <div class="text-lg text-blue-300 font-semibold mb-1">Article Type Distribution</div>
             <div class="space-y-2">
                 <div v-for="(value, type) in articleType" 
                      :key="type"
@@ -25,7 +25,7 @@
 
         <!-- Sentiments Analysis Section -->
         <div v-if="sentiments" class="space-y-3">
-            <h3 class="text-lg font-semibold text-blue-300">Emotional Analysis</h3>
+            <div class="text-lg text-blue-300 font-semibold mb-1">Emotional Analysis</div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div v-for="(value, emotion) in sentiments" 
                      :key="emotion"

@@ -4,6 +4,7 @@ from typing import List, Dict
 from dotenv import load_dotenv
 from pathlib import Path
 import logging
+from app.core.config import settings
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -11,10 +12,7 @@ logger = logging.getLogger(__name__)
 # Cargar el .env desde la carpeta backend
 load_dotenv(str(Path(__file__).resolve().parent.parent.parent / ".env"))
 
-SERPER_API_KEY = os.getenv("SERPER_API_KEY")
-SERPER_API_URL = "https://google.serper.dev/search"
-
-if not SERPER_API_KEY:
+if not settings.SERPER_API_KEY:
     logger.error("No se encontró SERPER_API_KEY en el entorno. Verificá tu archivo .env.")
     raise ValueError("No se encontró SERPER_API_KEY en el entorno. Verificá tu archivo .env.")
 
@@ -30,18 +28,18 @@ def search_web(query: str, num_results: int = 5) -> List[Dict[str, str]]:
         List[Dict[str, str]]: Lista de resultados con 'title', 'snippet' y 'url'.
     """
     headers = {
-        "X-API-KEY": SERPER_API_KEY,
+        "X-API-KEY": settings.SERPER_API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
         "q": query,
         "num": num_results,
-        "gl": "ar"  # Geo-localización para resultados de Argentina (podés cambiarlo)
+        "gl": settings.SERPER_GEO_LOCATION  # Geo-localización configurable
     }
 
     try:
         logger.info(f"Enviando búsqueda a Serper.dev: {query}")
-        response = requests.post(SERPER_API_URL, headers=headers, json=payload)
+        response = requests.post(settings.SERPER_API_URL, headers=headers, json=payload)
         response.raise_for_status()
         data = response.json()
         results = data.get("organic", [])

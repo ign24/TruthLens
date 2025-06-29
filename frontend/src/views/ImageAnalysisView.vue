@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Card from '../components/Card.vue';
+import { getApiUrl } from '../config/api';
+import ChatBot from '../components/ChatBot.vue';
+import { useMobileDetection } from '../composables/useMobileDetection';
+
+// Mobile detection for ChatBot visibility
+const { isMobile } = useMobileDetection();
 
 interface AnalysisResults {
   ai_probability: number;
@@ -33,7 +39,7 @@ const handleFileUpload = async (event: Event) => {
   isLoading.value = true;
   errorMsg.value = '';
   try {
-    const response = await fetch('http://localhost:8000/api/analyze_image', {
+    const response = await fetch(getApiUrl('ANALYZE_IMAGE'), {
       method: 'POST',
       body: formData,
     });
@@ -76,21 +82,21 @@ const getVerdictColorClass = (verdict: string) => {
 </script>
 
 <template>
-  <div class="pt-[140px] pb-4 px-4 text-white min-h-screen">
+  <div class="pt-20 sm:pt-28 md:pt-32 pb-4 px-4 text-white min-h-screen">
     <div class="w-full max-w-3xl mx-auto py-4">
       <div class="text-center mb-6">
-        <h1 class="font-display text-5xl font-bold mb-2 relative animate-fade-in">
+        <h1 class="font-display text-4xl sm:text-5xl font-bold mb-2 relative animate-fade-in">
           <span class="bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300 bg-clip-text text-transparent bg-[length:200%_200%] animate-gradient">
             Image Analysis
           </span>
         </h1>
-        <p class="text-lg text-blue-200/80 font-display tracking-wide mb-6 animate-fade-in">
+        <p class="text-base sm:text-lg text-blue-200/80 font-display tracking-wide mb-6 animate-fade-in">
           Upload an image to analyze its authenticity using advanced AI techniques.
         </p>
       </div>
-      <div class="w-full max-w-xl mx-auto mb-8 animate-fadeInUp">
+      <div class="w-full mx-auto mb-8 animate-fadeInUp">
         <div
-          class="flex flex-col items-center justify-center w-full h-56 border-2 border-dashed rounded-xl cursor-pointer bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-colors duration-200 group select-none"
+          class="flex flex-col items-center justify-center w-full h-48 sm:h-56 border-2 border-dashed rounded-xl cursor-pointer bg-slate-800/60 border-slate-600 hover:bg-slate-800/80 transition-colors duration-200 group select-none"
           :class="{ 'ring-2 ring-cyan-400/80 bg-slate-800/80': isDragActive }"
           tabindex="0"
           @click="onLabelClick"
@@ -121,9 +127,9 @@ const getVerdictColorClass = (verdict: string) => {
       </div>
       <div v-if="errorMsg" class="text-center text-red-400 mb-4 animate-fadeInUp">{{ errorMsg }}</div>
       <transition name="fade-scale" appear>
-        <div v-if="analysisResults" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2 animate-fadeInUp">
+        <div v-if="analysisResults" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-2 animate-fadeInUp">
           <Card class="col-span-1 md:col-span-2 mb-2 animate-fade-in">
-            <h3 class="text-xl font-semibold text-blue-200 mb-2">AI Probability</h3>
+            <h3 class="text-lg sm:text-xl font-semibold text-blue-200 mb-2">AI Probability</h3>
             <div class="w-full bg-[#16243a] rounded-full h-4 flex items-center relative overflow-hidden">
               <div
                 class="h-4 rounded-full transition-all duration-700 ease-in-out shadow-md bg-green-400"
@@ -137,56 +143,60 @@ const getVerdictColorClass = (verdict: string) => {
             <p class="mt-2 text-sm text-slate-400">{{ (analysisResults.ai_probability).toFixed(1) }}% probability of being AI-generated</p>
           </Card>
           <Card class="animate-fade-in">
-            <h3 class="text-lg font-semibold text-blue-200 mb-2">Visual Clues</h3>
+            <h3 class="text-base sm:text-lg font-semibold text-blue-200 mb-2">Visual Clues</h3>
             <ul class="space-y-2">
-              <li v-for="(clue, index) in analysisResults.visual_clues" :key="index" class="flex items-start gap-2 text-slate-300">
-                <span class="w-2 h-2 rounded-full bg-blue-400 mt-2"></span>
+              <li v-for="(clue, index) in analysisResults.visual_clues" :key="index" class="flex items-start gap-2 text-slate-300 text-sm sm:text-base">
+                <span class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 sm:mt-2"></span>
                 <span>{{ clue }}</span>
               </li>
             </ul>
           </Card>
           <Card class="animate-fade-in">
-            <h3 class="text-lg font-semibold text-blue-200 mb-2">Spectral Analysis</h3>
+            <h3 class="text-base sm:text-lg font-semibold text-blue-200 mb-2">Spectral Analysis</h3>
             <ul class="space-y-2">
-              <li v-for="(clue, index) in analysisResults.spectral_clues" :key="index" class="flex items-start gap-2 text-slate-300">
-                <span class="w-2 h-2 rounded-full bg-blue-400 mt-2"></span>
+              <li v-for="(clue, index) in analysisResults.spectral_clues" :key="index" class="flex items-start gap-2 text-slate-300 text-sm sm:text-base">
+                <span class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 sm:mt-2"></span>
                 <span>{{ clue }}</span>
               </li>
             </ul>
           </Card>
           <Card class="animate-fade-in">
-            <h3 class="text-lg font-semibold text-blue-200 mb-2">Metadata Analysis</h3>
+            <h3 class="text-base sm:text-lg font-semibold text-blue-200 mb-2">Metadata Analysis</h3>
             <ul class="space-y-2">
-              <li v-for="(clue, index) in analysisResults.metadata_clues" :key="index" class="flex items-start gap-2 text-slate-300">
-                <span class="w-2 h-2 rounded-full bg-blue-400 mt-2"></span>
+              <li v-for="(clue, index) in analysisResults.metadata_clues" :key="index" class="flex items-start gap-2 text-slate-300 text-sm sm:text-base">
+                <span class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 sm:mt-2"></span>
                 <span>{{ clue }}</span>
               </li>
             </ul>
           </Card>
           <Card class="flex flex-col justify-between animate-fade-in">
-            <h3 class="text-lg font-semibold text-blue-200 mb-2">Final Verdict</h3>
+            <h3 class="text-base sm:text-lg font-semibold text-blue-200 mb-2">Final Verdict</h3>
             <p class="text-base font-medium mb-2" :class="getVerdictColorClass(analysisResults.verdict)">{{ analysisResults.verdict }}</p>
-            <p class="text-slate-300 mb-2">{{ analysisResults.justification }}</p>
-            <p class="text-slate-300">{{ analysisResults.recommendation }}</p>
+            <p class="text-slate-300 mb-2 text-sm sm:text-base">{{ analysisResults.justification }}</p>
+            <p class="text-slate-300 text-sm sm:text-base">{{ analysisResults.recommendation }}</p>
           </Card>
         </div>
       </transition>
     </div>
-    <div class="mt-12 max-w-2xl mx-auto">
-      <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 rounded-2xl shadow-xl border border-cyan-400/20 p-8 mb-8 flex flex-col items-start">
+    <div class="mt-12 max-w-2xl mx-auto px-4 sm:px-0">
+      <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 rounded-2xl shadow-xl border border-cyan-400/20 p-6 sm:p-8 mb-8 flex flex-col items-start">
         <div class="flex items-center mb-4">
-          <svg class="w-7 h-7 text-cyan-300 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v6m0 6v6m9-9h-6m-6 0H3m13.07-6.93l-4.24 4.24m0 0l-4.24-4.24m8.48 8.48l-4.24 4.24m0 0l-4.24-4.24" stroke-linecap="round"/></svg>
-          <h2 class="text-2xl font-bold text-white">Image Analysis</h2>
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-cyan-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Image Analysis</h2>
         </div>
-        <p class="text-slate-200 mb-3">Verify if an image is real or artificially generated. Upload any photo or screenshot and TruthLens will evaluate:</p>
-        <ul class="list-disc list-inside text-slate-300 mb-3">
+        <p class="text-slate-200 mb-3 text-base">Verify if an image is real or artificially generated. Upload any photo or screenshot and TruthLens will evaluate:</p>
+        <ul class="list-disc list-inside text-slate-300 mb-3 text-base">
           <li>AI-generated imagery and deepfake probability</li>
           <li>Digital tampering and manipulation clues</li>
           <li>Metadata integrity and visual anomalies</li>
         </ul>
-        <p class="text-slate-200">The tool provides a confidence score and a transparent breakdown of authenticity risks.</p>
+        <p class="text-slate-200 text-base">The tool provides a confidence score and a transparent breakdown of authenticity risks.</p>
       </div>
     </div>
+    
+    <ChatBot v-if="!isMobile" />
   </div>
 </template>
 

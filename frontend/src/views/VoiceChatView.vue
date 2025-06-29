@@ -1,16 +1,19 @@
-<div class="mt-12 max-w-2xl mx-auto">
-  <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 rounded-2xl shadow-xl border border-cyan-400/20 p-8 mb-8 flex flex-col items-start">
+<template>
+<div class="mt-8 sm:mt-12 max-w-2xl mx-auto px-4 sm:px-0">
+  <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 rounded-2xl shadow-xl border border-cyan-400/20 p-6 sm:p-8 mb-8 flex flex-col items-start">
     <div class="flex items-center mb-4">
-      <svg class="w-7 h-7 text-cyan-300 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v6m0 6v6m9-9h-6m-6 0H3m13.07-6.93l-4.24 4.24m0 0l-4.24-4.24m8.48 8.48l-4.24 4.24m0 0l-4.24-4.24" stroke-linecap="round"/></svg>
-      <h2 class="text-2xl font-bold text-white">Clara, Your AI Assistant</h2>
+      <span class="text-2xl sm:text-3xl mr-3">🔵</span>
+      <h2 class="text-xl sm:text-2xl font-bold text-white">Clara, your critical guide</h2>
     </div>
-    <p class="text-slate-200 mb-3">Meet Clara — your real-time AI companion for content verification. She can:</p>
-    <ul class="list-disc list-inside text-slate-300 mb-3">
-      <li>Analyze text and image inputs</li>
-      <li>Highlight bias, detect emotional triggers, and evaluate source reliability</li>
-      <li>Support 50+ languages with real-time translation</li>
-      <li>Respond to voice commands with context awareness</li>
+    <p class="text-slate-200 mb-3 text-base">Clara is the voice of TruthLens — your companion for exploring the platform and making sense of what you see.</p>
+    <p class="text-slate-200 mb-3 text-base">She doesn't perform analysis, but helps you interpret it through a critical lens. Inspired by discourse theory and frameworks like DOCA, Clara helps you:</p>
+    <ul class="list-disc list-inside text-slate-300 mb-3 text-base space-y-1">
+      <li>Understand how bias, emotional tone, and manipulation appear in language</li>
+      <li>Reflect on the results presented on screen</li>
+      <li>Navigate each tool with clarity and depth</li>
+      <li>Develop a more critical perspective on media and language</li>
     </ul>
-    <p class="text-slate-200">Clara is available 24/7 to help you think critically.</p>
+    <p class="text-slate-200 text-base">Clara isn't here to tell you what to think — she's here to help you think for yourself.</p>
   </div>
-</div> 
+</div>
+</template> 

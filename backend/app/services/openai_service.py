@@ -11,10 +11,10 @@ import unicodedata
 from ..prompts.analysis_prompts import (
     get_analysis_prompt,
     get_system_prompt,
-    get_chat_system_prompt,
     get_web_search_instructions,
     get_image_forensics_prompt
 )
+from ..prompts.chat_prompts import get_chat_system_prompt
 import os
 
 # Configure logging
@@ -47,7 +47,6 @@ class OpenAIService:
         )
         self.model = settings.OPENAI_MODEL
         self.storage = StorageService()
-        logger.info(f"OpenAIService initialized with model: {self.model}")
 
     async def analyze_text(
         self,
@@ -65,8 +64,8 @@ class OpenAIService:
                 {"role": "system", "content": get_system_prompt()},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=2000,
+            temperature=0.2,
+            max_tokens=4000,
             response_format={ "type": "json_object" }
         )
 
@@ -116,7 +115,9 @@ class OpenAIService:
                 recommendation=analysis_data["recommendation"],
                 article_type=article_type,
                 sentiments=sentiments,
-                analysis_explanation=analysis_data["analysis_explanation"]
+                analysis_explanation=analysis_data["analysis_explanation"],
+                topic=analysis_data.get("topic"),
+                frames_detected=analysis_data.get("frames_detected")
             )
             
             # Save article and analysis
@@ -183,15 +184,16 @@ class OpenAIService:
                     raise Exception(f"Error during web search: {str(e)}")
 
             # Prepare messages with system context
-            full_messages = [system_message] + [{"role": msg.role, "content": msg.content} for msg in messages]
+            filtered_messages = [msg.dict() for msg in messages if msg.role != "system"]
+            full_messages = [system_message] + filtered_messages
             logger.info(f"Sending request to OpenAI with {len(full_messages)} messages")
 
             # Get response from OpenAI
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=full_messages,
-                temperature=0.7,
-                max_tokens=150  # Limit response length
+                temperature=0.2,
+                max_tokens=2000
             )
 
             return {
@@ -227,7 +229,7 @@ class OpenAIService:
                         ]
                     }
                 ],
-                max_tokens=1200,
+                max_tokens=1500,
                 response_format={"type": "json_object"}
             )
             logger.error(f"[ImageAnalysis] Respuesta cruda de OpenAI: {response.choices[0].message.content!r}")

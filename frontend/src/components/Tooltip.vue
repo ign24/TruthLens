@@ -123,7 +123,7 @@ onUnmounted(() => {
   border-right-color: rgba(17, 24, 39, 0.95);
 }
 
-/* Estilos específicos para móvil */
+/* Specific styles for mobile */
 .mobile-tooltip {
   position: fixed;
   left: 50% !important;

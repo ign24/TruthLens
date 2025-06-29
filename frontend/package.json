@@ -14,7 +14,8 @@
     "@vueuse/core": "^10.7.2",
     "marked": "^15.0.12",
     "simplebar": "^6.3.1",
-    "simplebar-vue": "^2.4.1"
+    "simplebar-vue": "^2.4.1",
+    "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

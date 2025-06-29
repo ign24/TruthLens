@@ -6,6 +6,8 @@ from elevenlabs.client import ElevenLabs
 import os, uuid, json, logging
 from datetime import datetime
 from typing import Dict, Optional
+from app.services.storage_service import StorageService
+from app.services.cache_manager import CacheManager
 
 router = APIRouter(
     prefix="/translator",
@@ -16,10 +18,11 @@ router = APIRouter(
 openai_service = OpenAIService()
 elevenlabs_client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
 logger = logging.getLogger(__name__)
+storage_service = StorageService()
+cache_manager = CacheManager(storage_service)
 
 # Cache for available voices
 _available_voices: Optional[Dict[str, str]] = None
-TEMP_DIR = "../backend/app/data/temp"
 
 def get_voice_for_language(lang: str) -> str:
     """
@@ -92,7 +95,18 @@ async def translate_text(request: TranslationRequest):
             max_tokens=1000
         )
         translated_text = response.choices[0].message.content.strip()
-        logger.info(f"Texto traducido correctamente de: {request.source_language} a: {request.target_language}")
+        logger.info(f"Text translated successfully from: {request.source_language} to: {request.target_language}")
+        # Save input and result to database
+        storage_service.save_analysis(
+            tipo_analisis="traduccion",
+            input_original=request.text,
+            resultado={
+                "translated_text": translated_text,
+                "source_language": request.source_language,
+                "target_language": request.target_language,
+                "translation_mode": request.translation_mode
+            }
+        )
         return TranslationResponse(
             translated_text=translated_text,
             source_language=request.source_language,
@@ -110,7 +124,10 @@ async def translate_text(request: TranslationRequest):
 async def translate_and_generate_voice(request: TranslationRequest):
     logger.info(f"Received request: {request}")
     try:
-        # 1. Generar prompt y log
+        # Clean up old files periodically
+        storage_service.cleanup_old_files(max_age_hours=24)
+        
+        # 1. Generate prompt and log
         prompt = get_translation_prompt(
             style=request.translation_mode,
             target_lang=request.target_language,
@@ -118,7 +135,7 @@ async def translate_and_generate_voice(request: TranslationRequest):
         )
         logger.info(f"Generated prompt: {prompt}")
 
-        # 2. Traducción con OpenAI
+        # 2. Translation with OpenAI
         response = await openai_service.client.chat.completions.create(
             model=openai_service.model,
             messages=[
@@ -131,11 +148,11 @@ async def translate_and_generate_voice(request: TranslationRequest):
         translated_text = response.choices[0].message.content.strip()
         logger.info(f"Translated text: {translated_text}")
 
-        # 3. Selección de voz
+        # 3. Voice selection
         voice_id = get_voice_for_language(request.target_language)
         logger.info(f"Selected voice_id: {voice_id} for language: {request.target_language}")
 
-        # 4. Generación de audio (método correcto, consume el generador)
+        # 4. Audio generation
         audio_gen = elevenlabs_client.text_to_speech.convert(
             text=translated_text,
             voice_id=voice_id,
@@ -143,25 +160,46 @@ async def translate_and_generate_voice(request: TranslationRequest):
             output_format="mp3_44100_128"
         )
 
+        # 5. Save audio file using storage service
         uid = str(uuid.uuid4())
-        audio_path = f"{TEMP_DIR}/voice_{uid}.mp3"
-        with open(audio_path, "wb") as f:
-            for chunk in audio_gen:
-                f.write(chunk)
+        audio_filename = f"voice_{uid}.mp3"
+        
+        # Collect audio data
+        audio_data = b""
+        for chunk in audio_gen:
+            audio_data += chunk
+        
+        # Save audio file
+        audio_path = storage_service.save_audio_file(audio_data, audio_filename)
         logger.info(f"Audio file saved: {audio_path}")
 
-        # 6. Guardado de metadata
+        # 6. Save metadata
         metadata = {
             "original_text": request.text,
             "translated_text": translated_text,
             "source_language": request.source_language,
             "target_language": request.target_language,
             "translation_mode": request.translation_mode,
-            "voice_id": voice_id
+            "voice_id": voice_id,
+            "timestamp": datetime.now().isoformat()
         }
-        with open(f"{TEMP_DIR}/translation_{uid}.json", "w", encoding="utf-8") as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=2)
+        metadata_filename = f"translation_{uid}.json"
+        storage_service.save_metadata(metadata, metadata_filename)
         logger.info(f"Metadata saved for id: {uid}")
+
+        # 7. Save to database
+        storage_service.save_analysis(
+            tipo_analisis="traduccion_voz",
+            input_original=request.text,
+            resultado={
+                "translated_text": translated_text,
+                "source_language": request.source_language,
+                "target_language": request.target_language,
+                "translation_mode": request.translation_mode,
+                "voice_id": voice_id,
+                "audio_filename": audio_filename
+            }
+        )
 
         return {
             "translated_text": translated_text,
@@ -171,4 +209,73 @@ async def translate_and_generate_voice(request: TranslationRequest):
 
     except Exception as e:
         logger.error(f"Error in translate-and-generate-voice: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Translation or voice generation failed") 
+        raise HTTPException(status_code=500, detail="Translation or voice generation failed")
+
+@router.get("/cache/stats")
+async def get_cache_stats():
+    """
+    Get cache statistics including file count, total size, and file information.
+    """
+    try:
+        stats = cache_manager.get_cache_stats()
+        return {
+            "status": "success",
+            "data": stats
+        }
+    except Exception as e:
+        logger.error(f"Error getting cache stats: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving cache statistics")
+
+@router.post("/cache/cleanup")
+async def cleanup_cache(max_age_hours: int = 24):
+    """
+    Manually trigger cache cleanup.
+    
+    Args:
+        max_age_hours: Maximum age of files to keep (default: 24 hours)
+    """
+    try:
+        await cache_manager.cleanup_cache(max_age_hours)
+        return {
+            "status": "success",
+            "message": f"Cache cleanup completed. Files older than {max_age_hours} hours were removed."
+        }
+    except Exception as e:
+        logger.error(f"Error during manual cache cleanup: {e}")
+        raise HTTPException(status_code=500, detail="Error during cache cleanup")
+
+@router.post("/cache/cleanup/start")
+async def start_cache_cleanup_scheduler(cleanup_interval_hours: int = 1):
+    """
+    Start the automatic cache cleanup scheduler.
+    
+    Args:
+        cleanup_interval_hours: How often to run cleanup (default: 1 hour)
+    """
+    try:
+        # Start the scheduler in the background
+        import asyncio
+        asyncio.create_task(cache_manager.start_cleanup_scheduler(cleanup_interval_hours))
+        
+        return {
+            "status": "success",
+            "message": f"Cache cleanup scheduler started with {cleanup_interval_hours} hour interval"
+        }
+    except Exception as e:
+        logger.error(f"Error starting cache cleanup scheduler: {e}")
+        raise HTTPException(status_code=500, detail="Error starting cache cleanup scheduler")
+
+@router.post("/cache/cleanup/stop")
+async def stop_cache_cleanup_scheduler():
+    """
+    Stop the automatic cache cleanup scheduler.
+    """
+    try:
+        await cache_manager.stop_cleanup_scheduler()
+        return {
+            "status": "success",
+            "message": "Cache cleanup scheduler stopped"
+        }
+    except Exception as e:
+        logger.error(f"Error stopping cache cleanup scheduler: {e}")
+        raise HTTPException(status_code=500, detail="Error stopping cache cleanup scheduler") 

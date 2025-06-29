@@ -10,37 +10,59 @@
           <p class="subtitle">Chat with <span class="gradient-text">Clara</span>. Your real-time multilingual AI from TruthLens.</p>
         </div>
       </transition>
+      
+      <!-- Mobile permission message -->
+      <transition name="fade-scale" appear>
+        <div v-if="!hasPermissions && isMobileAudio" class="permission-message">
+          <div class="permission-card">
+            <svg class="permission-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+            <h3>Microphone Access Required</h3>
+            <p>To chat with Clara, please allow microphone access when prompted.</p>
+            <button @click="requestPermissions" class="permission-button">
+              Enable Microphone
+            </button>
+          </div>
+        </div>
+      </transition>
+
       <!-- Voice Assistant Main Button with animated disc background -->
       <transition name="scale-fade" appear>
         <div class="voice-button-wrapper" :class="{ 'active': isActive, 'listening': isListening, 'speaking': isSpeaking }">
           <!-- Label Call Clara sobre el botón, solo cuando está inactiva -->
-          <div v-if="!isListening && !isSpeaking && !isConnecting && !isAlwaysListening" class="call-clara-label">
+          <div v-if="!isListening && !isSpeaking && !isConnecting && !isAlwaysListening && hasPermissions" class="call-clara-label">
             <svg width="16" height="16" viewBox="0 0 22 22" fill="none" style="margin-right:6px;">
               <rect x="3" y="10" width="2" height="4" rx="1" fill="#60a5fa"/>
               <rect x="7" y="7" width="2" height="10" rx="1" fill="#60a5fa"/>
               <rect x="11" y="5" width="2" height="14" rx="1" fill="#60a5fa"/>
               <rect x="15" y="8" width="2" height="8" rx="1" fill="#60a5fa"/>
             </svg>
-            Call Clara
+            {{ isMobileAudio ? 'Tap to Talk' : 'Call Clara' }}
           </div>
+          
           <!-- Animated Background Disc -->
           <div class="voice-disc">
             <div :class="['disc-gradient', (isListening || isSpeaking) ? 'disc-gradient-bright' : '']"></div>
             <div class="disc-shine"></div>
           </div>
+          
           <!-- Main Button for voice interaction -->
           <button
             @click="toggleVoiceChat"
+            @touchstart="handleTouchStart"
+            @touchend="handleTouchEnd"
             @mousedown="handleMouseDown"
             @mouseup="handleMouseUp"
             @mouseleave="handleMouseUp"
-            :disabled="isConnecting"
+            :disabled="isConnecting || !hasPermissions"
             class="voice-button"
             :class="{
               'listening': isListening,
               'speaking': isSpeaking,
               'connecting': isConnecting,
-              'error': hasError
+              'error': hasError,
+              'disabled': !hasPermissions
             }"
             :aria-label="getButtonLabel()"
           >
@@ -48,33 +70,53 @@
           </button>
         </div>
       </transition>
+      
       <!-- State label for listening/speaking -->
       <transition name="state-fade-slide" mode="out-in">
-        <div v-if="isListening || isSpeaking" class="voice-state-label" key="state-label">
-          <span v-if="isListening">Listening</span>
-          <span v-else-if="isSpeaking">Responding</span>
+        <div v-if="isListening || isSpeaking || isConnecting" class="voice-state-label" key="state-label">
+          <span v-if="isConnecting">Connecting...</span>
+          <span v-else-if="isListening">{{ isMobileAudio ? 'Listening...' : 'Listening' }}</span>
+          <span v-else-if="isSpeaking">{{ isMobileAudio ? 'Clara is responding...' : 'Responding' }}</span>
+        </div>
+      </transition>
+
+      <!-- Error message -->
+      <transition name="fade-scale">
+        <div v-if="hasError" class="error-message">
+          <p>{{ statusMessage }}</p>
+          <button @click="resetError" class="error-button">Try Again</button>
+        </div>
+      </transition>
+
+      <!-- Mobile instructions -->
+      <transition name="fade-scale" appear>
+        <div v-if="isMobileAudio && hasPermissions" class="mobile-instructions">
+          <p>{{ isAlwaysListening ? 'Tap again to end conversation' : 'Tap and hold to speak with Clara' }}</p>
         </div>
       </transition>
     </div>
+    
     <!-- Tarjeta informativa de Clara -->
-    <div class="mt-12 max-w-2xl mx-auto">
-      <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 rounded-2xl shadow-xl border border-cyan-400/20 p-8 mb-8 flex flex-col items-start">
+    <div class="mt-8 sm:mt-12 max-w-2xl mx-auto px-4 sm:px-0">
+      <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 rounded-2xl shadow-xl border border-cyan-400/20 p-6 sm:p-8 mb-8 flex flex-col items-start">
         <div class="flex items-center mb-4">
-          <svg class="w-7 h-7 text-cyan-300 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v6m0 6v6m9-9h-6m-6 0H3m13.07-6.93l-4.24 4.24m0 0l-4.24-4.24m8.48 8.48l-4.24 4.24m0 0l-4.24-4.24" stroke-linecap="round"/></svg>
-          <h2 class="text-2xl font-bold text-white">Clara, Your AI Assistant</h2>
+          <div class="w-8 h-8 mr-3 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg">
+            <div class="w-5 h-5 rounded-full bg-slate-900"></div>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Clara, your critical guide</h2>
         </div>
-        <p class="text-slate-200 mb-3">Meet Clara — your real-time AI companion for content verification. She can:</p>
-        <ul class="list-disc list-inside text-slate-300 mb-3">
-          <li>Analyze text and image inputs</li>
-          <li>Highlight bias, detect emotional triggers, and evaluate source reliability</li>
-          <li>Support 50+ languages with real-time translation</li>
-          <li>Respond to voice commands with context awareness</li>
+        <p class="text-slate-200 mb-3 text-base">Clara is the voice of TruthLens — your companion for exploring the platform and making sense of what you see.</p>
+        <ul class="list-disc list-inside text-slate-300 mb-3 text-base space-y-1">
+          <li>Understand how bias, emotional tone, and manipulation appear in language</li>
+          <li>Uncover the 'why' behind each analysis tool and its findings</li>
+          <li>Develop a more critical perspective on media and language</li>
         </ul>
-        <p class="text-slate-200">Clara is available 24/7 to help you think critically.</p>
+        <p class="text-slate-200 text-base font-semibold">Clara's goal is to help you think for yourself.</p>
       </div>
     </div>
+    
     <!-- ChatBot assistant at the bottom -->
-    <ChatBot />
+    <ChatBot v-if="!isMobileDevice" />
   </div>
 </template>
 
@@ -84,6 +126,14 @@ import listenStartSound from '../assets/sounds/listen_start.wav';
 import speakStartSound from '../assets/sounds/speak_start.mp3';
 import ChatBot from '../components/ChatBot.vue';
 import { Conversation } from '@elevenlabs/client';
+import { useAudioOptimization } from '../composables/useAudioOptimization';
+import { useMobileDetection } from '../composables/useMobileDetection';
+
+// Audio optimization
+const { isMobile: isMobileAudio, getMobileAudioConstraints, playAudio, resumeAudioContext } = useAudioOptimization();
+
+// Mobile detection for ChatBot visibility
+const { isMobile: isMobileDevice } = useMobileDetection();
 
 // State management
 const isActive = ref(false);
@@ -100,14 +150,33 @@ const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
 const agentId = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
 let conversation: Conversation | null = null;
 
+// Touch handling for mobile
+let touchStartTime = 0;
+let touchTimer: number | null = null;
+
 // Computed properties
 const getButtonLabel = () => {
-  if (!hasPermissions.value) return 'Activar micrófono';
-  if (isConnecting.value) return 'Conectando...';
-  if (isAlwaysListening.value) return 'Finalizar conversación';
-  if (isListening.value) return 'Escuchando...';
-  if (isSpeaking.value) return 'Clara está respondiendo';
-  return 'Iniciar conversación';
+  if (!hasPermissions.value) return 'Enable microphone to chat with Clara';
+  if (isConnecting.value) return 'Connecting to Clara...';
+  if (isAlwaysListening.value) return 'End conversation with Clara';
+  if (isListening.value) return 'Clara is listening...';
+  if (isSpeaking.value) return 'Clara is responding';
+  return isMobileAudio ? 'Tap to talk with Clara' : 'Click to start conversation with Clara';
+};
+
+// Request microphone permissions
+const requestPermissions = async (): Promise<boolean> => {
+  try {
+    const audioConstraints = getMobileAudioConstraints();
+    const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+    hasPermissions.value = true;
+    stream.getTracks().forEach(track => track.stop());
+    return true;
+  } catch (error) {
+    console.error('Error requesting microphone permissions:', error);
+    handleError('Microphone access denied. Please enable microphone permissions in your browser settings.');
+    return false;
+  }
 };
 
 // Initialize ElevenLabs Voice
@@ -117,12 +186,17 @@ const initializeVoice = async (): Promise<boolean> => {
       throw new Error('Missing ElevenLabs API key or Agent ID');
     }
 
-    // Request microphone permissions
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    hasPermissions.value = true;
-    stream.getTracks().forEach(track => track.stop()); // Stop the stream after getting permissions
+    // Resume audio context for mobile
+    await resumeAudioContext();
 
-    // Start the conversation
+    if (!hasPermissions.value) {
+      const granted = await requestPermissions();
+      if (!granted) return false;
+    }
+
+    isConnecting.value = true;
+
+    // Start the conversation with mobile-optimized settings
     conversation = await Conversation.startSession({
       agentId,
       onConnect: () => {
@@ -130,31 +204,42 @@ const initializeVoice = async (): Promise<boolean> => {
         isListening.value = true;
         isSpeaking.value = false;
         isConnecting.value = false;
+        hasError.value = false;
+        
+        // Play connection sound
+        if (isMobileAudio) {
+          playAudio(listenStartSound, { volume: 0.3 });
+        } else {
+          playAudio(listenStartSound, { volume: 0.5 });
+        }
       },
       onDisconnect: () => {
         console.log('Voice conversation disconnected');
         isListening.value = false;
         isSpeaking.value = false;
         isConnecting.value = false;
+        isAlwaysListening.value = false;
+        isActive.value = false;
       },
       onError: (message: string) => {
         console.error('Voice error:', message);
-        handleError(message || 'Error en la conversación de voz');
+        handleError(message || 'Error in voice conversation');
       },
       onModeChange: (mode) => {
         console.log('Mode changed:', mode.mode);
         if (mode.mode === 'speaking') {
           isSpeaking.value = true;
           isListening.value = false;
-          // Play speak start sound
-          const audio = new Audio(speakStartSound);
-          audio.volume = 0.5;
-          audio.play();
-        } else {
+          // Play speak start sound with mobile optimization
+          playAudio(speakStartSound, { volume: isMobileAudio ? 0.3 : 0.5 });
+        } else if (mode.mode === 'listening') {
           isSpeaking.value = false;
           if (isAlwaysListening.value) {
             isListening.value = true;
           }
+        } else {
+          isSpeaking.value = false;
+          isListening.value = false;
         }
       }
     });
@@ -162,17 +247,20 @@ const initializeVoice = async (): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Error initializing voice:', error);
-    handleError('Error al inicializar el asistente de voz');
+    handleError('Failed to connect to Clara. Please check your internet connection and try again.');
     return false;
   }
 };
 
 // Voice chat control
 const toggleVoiceChat = async () => {
+  if (!hasPermissions.value) {
+    await requestPermissions();
+    return;
+  }
+
   if (!conversation) {
-    isConnecting.value = true;
     const success = await initializeVoice();
-    isConnecting.value = false;
     if (!success) return;
   }
 
@@ -189,15 +277,57 @@ const toggleVoiceChat = async () => {
   }
 };
 
-// Mouse event handlers
-const handleMouseDown = () => {
+// Touch event handlers for mobile
+const handleTouchStart = (e: TouchEvent) => {
+  e.preventDefault();
+  if (!hasPermissions.value) {
+    requestPermissions();
+    return;
+  }
+  
+  touchStartTime = Date.now();
   if (!isAlwaysListening.value && !isConnecting.value) {
+    isActive.value = true;
+    // Start conversation after a short delay to prevent accidental triggers
+    touchTimer = window.setTimeout(async () => {
+      if (!conversation) {
+        await initializeVoice();
+      }
+    }, 100);
+  }
+};
+
+const handleTouchEnd = async (e: TouchEvent) => {
+  e.preventDefault();
+  if (touchTimer) {
+    clearTimeout(touchTimer);
+    touchTimer = null;
+  }
+  
+  const touchDuration = Date.now() - touchStartTime;
+  
+  // If it was a quick tap and we're in always listening mode, toggle off
+  if (touchDuration < 200 && isAlwaysListening.value && conversation) {
+    await conversation.endSession();
+    conversation = null;
+    isAlwaysListening.value = false;
+    isActive.value = false;
+  }
+  // If it was a longer press and we're not in always listening, start conversation
+  else if (touchDuration >= 200 && !isAlwaysListening.value) {
+    await toggleVoiceChat();
+  }
+};
+
+// Mouse event handlers for desktop
+const handleMouseDown = () => {
+  if (!isMobileAudio && !isAlwaysListening.value && !isConnecting.value && hasPermissions.value) {
     isActive.value = true;
   }
 };
 
 const handleMouseUp = async () => {
-  if (!isAlwaysListening.value && !isConnecting.value && isActive.value && conversation) {
+  if (!isMobileAudio && !isAlwaysListening.value && !isConnecting.value && isActive.value && conversation) {
     isActive.value = false;
     await conversation.endSession();
     conversation = null;
@@ -214,17 +344,26 @@ const handleError = (message: string) => {
   isAlwaysListening.value = false;
   isActive.value = false;
   
-  setTimeout(() => {
-    hasError.value = false;
-    statusMessage.value = '';
-  }, 3000);
+  if (conversation) {
+    conversation.endSession();
+    conversation = null;
+  }
+};
+
+const resetError = () => {
+  hasError.value = false;
+  statusMessage.value = '';
 };
 
 // Lifecycle hooks
 onMounted(async () => {
   try {
-    // Check microphone permissions
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Resume audio context for mobile
+    await resumeAudioContext();
+    
+    // Check microphone permissions with mobile optimization
+    const audioConstraints = getMobileAudioConstraints();
+    const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
     hasPermissions.value = true;
     stream.getTracks().forEach(track => track.stop());
   } catch (error) {
@@ -234,29 +373,27 @@ onMounted(async () => {
 });
 
 onUnmounted(async () => {
+  if (touchTimer) {
+    clearTimeout(touchTimer);
+  }
+  
   if (conversation) {
     await conversation.endSession();
     conversation = null;
   }
 });
 
-// Función para reproducir sonidos
-const playSound = (src: string) => {
-  const audio = new Audio(src);
-  audio.volume = 0.7;
-  audio.play();
-};
-
-// Watch para reproducir sonidos al cambiar de estado
+// Watch to play sounds when state changes
 watch(isListening, (newVal, oldVal) => {
-  console.log('isListening cambió:', oldVal, '->', newVal);
-  if (newVal && !oldVal) {
-    playSound(listenStartSound);
+  console.log('isListening changed:', oldVal, '->', newVal);
+  if (newVal && !oldVal && !isConnecting.value) {
+    playAudio(listenStartSound, { volume: isMobileAudio ? 0.3 : 0.5 });
   }
 });
+
 watch(isSpeaking, (newVal, oldVal) => {
   if (newVal && !oldVal) {
-    playSound(speakStartSound);
+    playAudio(speakStartSound, { volume: isMobileAudio ? 0.3 : 0.5 });
   }
 });
 </script>
@@ -269,6 +406,7 @@ watch(isSpeaking, (newVal, oldVal) => {
   align-items: center;
   justify-content: flex-start;
   padding-top: 13vh;
+  padding-bottom: 2rem;
 }
 
 .voice-assistant-container {
@@ -277,6 +415,8 @@ watch(isSpeaking, (newVal, oldVal) => {
   align-items: center;
   gap: 2.5rem;
   justify-content: center;
+  max-width: 100%;
+  padding: 0 1rem;
 }
 
 .voice-button-wrapper {
@@ -286,6 +426,8 @@ watch(isSpeaking, (newVal, oldVal) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  max-width: 90vw;
+  max-height: 90vw;
 }
 
 /* Animated Background Disc */
@@ -327,10 +469,7 @@ watch(isSpeaking, (newVal, oldVal) => {
     #38bdf8 300deg,
     #38bdf8 360deg
   );
-}
-
-.disc-gradient-fast {
-  animation-duration: 2s !important;
+  animation-duration: 3s;
 }
 
 .disc-shine {
@@ -368,6 +507,9 @@ watch(isSpeaking, (newVal, oldVal) => {
     inset 0 4px 8px rgba(255, 255, 255, 0.1);
   font-size: 2.2rem;
   overflow: visible;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .voice-button::before {
@@ -384,7 +526,7 @@ watch(isSpeaking, (newVal, oldVal) => {
   box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
 }
 
-.voice-button:hover {
+.voice-button:hover:not(:disabled) {
   transform: scale(1.07);
   border-color: rgba(59, 130, 246, 0.5);
   box-shadow: 
@@ -392,62 +534,43 @@ watch(isSpeaking, (newVal, oldVal) => {
     inset 0 4px 8px rgba(255, 255, 255, 0.15);
 }
 
-.voice-button:active {
+.voice-button:active:not(:disabled) {
   transform: scale(0.98);
 }
 
-.voice-button:disabled {
+.voice-button:disabled,
+.voice-button.disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.5;
+  transform: none !important;
 }
 
-/* Button Content */
-.button-icon {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 12;
+.voice-button.listening {
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 
+    0 0 80px rgba(34, 197, 94, 0.3),
+    inset 0 4px 8px rgba(255, 255, 255, 0.15);
 }
 
-.icon-mic,
-.icon-speaker {
-  width: 100%;
-  height: 100%;
-  stroke-width: 3.5;
+.voice-button.speaking {
+  border-color: rgba(249, 115, 22, 0.6);
+  box-shadow: 
+    0 0 80px rgba(249, 115, 22, 0.3),
+    inset 0 4px 8px rgba(255, 255, 255, 0.15);
 }
 
-.icon-waveform {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  height: 100%;
+.voice-button.connecting {
+  border-color: rgba(168, 85, 247, 0.6);
+  box-shadow: 
+    0 0 80px rgba(168, 85, 247, 0.3),
+    inset 0 4px 8px rgba(255, 255, 255, 0.15);
 }
 
-.wave-bar {
-  width: 6px;
-  height: 40px;
-  background: currentColor;
-  border-radius: 3px;
-  animation: waveform 1s ease-in-out infinite;
-}
-
-.icon-loading {
-  display: none;
-}
-
-.loading-spinner {
-  display: none;
-}
-
-.button-text {
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.2;
-  z-index: 12;
+.voice-button.error {
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 
+    0 0 80px rgba(239, 68, 68, 0.3),
+    inset 0 4px 8px rgba(255, 255, 255, 0.15);
 }
 
 /* Title Styles */
@@ -467,6 +590,12 @@ watch(isSpeaking, (newVal, oldVal) => {
   color: transparent;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .main-title {
+    font-size: 2.5rem;
+  }
 }
 
 .gradient-text {
@@ -497,10 +626,6 @@ watch(isSpeaking, (newVal, oldVal) => {
 .fade-scale-leave-from, .fade-scale-enter-to {
   opacity: 1;
   transform: scale(1);
-}
-
-.modern-fade {
-  transition: opacity 0.3s, transform 0.3s;
 }
 
 /* Blob Animations */
@@ -651,24 +776,6 @@ watch(isSpeaking, (newVal, oldVal) => {
   }
 }
 
-.permission-hint,
-.permission-message {
-  display: none;
-}
-.permission-hint-text {
-  color: #60a5fa;
-  border: 1px solid #60a5fa;
-  background: none;
-  font-size: 0.97rem;
-  margin: 1.2rem auto 0 auto;
-  padding: 0.3rem 1.2rem;
-  border-radius: 6px;
-  text-align: center;
-  font-weight: 500;
-  max-width: 350px;
-  opacity: 0.8;
-}
-
 .call-clara-label {
   display: flex;
   align-items: center;
@@ -689,4 +796,171 @@ watch(isSpeaking, (newVal, oldVal) => {
   pointer-events: none;
   letter-spacing: 0.01em;
 }
-</style> 
+
+@media (max-width: 768px) {
+  .call-clara-label {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.7rem;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  .voice-button-wrapper {
+    width: 280px;
+    height: 280px;
+  }
+  
+  .voice-button {
+    width: 200px !important;
+    height: 200px !important;
+  }
+  
+  .voice-button::before {
+    width: 90px !important;
+    height: 90px !important;
+  }
+  
+  .liquid-blob {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .liquid-blob-active {
+    transform: scale(2.5);
+  }
+  
+  .subtitle {
+    font-size: 0.9rem;
+  }
+  
+  /* Improve touch targets for mobile */
+  .voice-button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  /* Optimize audio visual feedback */
+  .disc-gradient-bright {
+    filter: brightness(1.4) saturate(1.6) drop-shadow(0 0 40px #38bdf8cc);
+  }
+}
+
+/* iOS-specific optimizations */
+@supports (-webkit-touch-callout: none) {
+  .voice-button {
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Ensure audio plays on iOS */
+  audio {
+    -webkit-playsinline: true;
+    playsinline: true;
+  }
+}
+
+/* Android-specific optimizations */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .voice-button {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Permission message */
+.permission-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.permission-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 2px solid #3b82f6;
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.permission-icon {
+  width: 4rem;
+  height: 4rem;
+  color: #3b82f6;
+  margin: 0 auto 1rem;
+}
+
+.permission-card h3 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.permission-card p {
+  color: #94a3b8;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.permission-button {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.permission-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Error message */
+.error-message {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  max-width: 400px;
+  margin-top: 1rem;
+}
+
+.error-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.error-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile instructions */
+.mobile-instructions {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  max-width: 300px;
+  line-height: 1.4;
+  margin-top: 1rem;
+}
+</style>
