@@ -12,65 +12,92 @@
 [![Backend: FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Powered by: OpenAI](https://img.shields.io/badge/Powered%20by-OpenAI-4A90E2?logo=openai)](https://openai.com/)
 
-> **Built for the World's Largest Hackathon presented by Bolt — Empowering minds, not manipulating them.**
-
-## 🚀 Submission Highlights
-
-- ✅ **Project Name:** TruthLens  
-- ✅ **Built with Bolt.new:** Yes (initial prototype + UI flows built on Bolt, badge included)  
-- ✅ **Public Demo:** [https://truthlensai.netlify.app](https://truthlensai.netlify.app)  
-- ✅ **Bolt Project URL:** [https://bolt.new/~/truthlens](https://bolt.new/~/truthlens)  
-- ✅ **Video Demo:** [YouTube link](https://youtube.com/yourlink)  
-- ✅ **Email used in Bolt.new:** ignacio_zu@outlook.com  
-- ✅ **Region:** AMER  
-- ✅ **Challenges Applied To:**
-  - 🔊 Voice AI Challenge (via ElevenLabs integration)
-  - ☁️ Deploy Challenge (Netlify full-stack deployment)
-  - 🚀 Startup Challenge (Supabase backend and scalability)
-  - 💬 Inspirational Story (solo founder, no funding, purpose-driven)
-  - 🌐 Most Viral Project (UI + UX designed for shareability and impact)
-  - 🦄 Future Unicorn
+> Built for the World's Largest Hackathon presented by Bolt — Empowering minds, not manipulating them.
 
 ---
 
-## 🧠 What is TruthLens?
+## Submission Highlights
 
-TruthLens is a full-stack AI platform that **analyzes news and public content for bias, emotion, manipulation, and synthetic media traces**. It's built to empower citizens—not filter them.
-
-> TruthLens doesn't follow the headlines. It questions them.
-
-### ✅ What makes TruthLens special?
-
-- 🔍 **Visual Bias Block**: Highlights emotional and ideological bias in real time.
-- 🎙️ **Voice Assistant ("Clara")**: Multilingual RAG-based guide powered by ElevenLabs.
-- 🤖 **AI Detection**: Flags LLM-generated content and AI-manipulated images.
-- 🌍 **Global Translator Pro**: Translates *tone and intent*, not just words.
-- 🧠 **Academic Rigor**: Based on DOCA framework and supported by [this paper](https://arxiv.org/abs/2503.15342).
-
----
-
-## 🧑‍💻 Why it's built for the hackathon
-
-TruthLens was created **entirely after May 30, 2025** for the Bolt hackathon, with the following structure:
-
-| Requirement | ✅ Met |
-|------------|--------|
-| Uses Bolt.new? | ✅ UI prototype and workflow logic built with Bolt |
-| Includes Bolt badge? | ✅ Displayed on homepage |
-| Deployed & Publicly Available? | ✅ Via Netlify |
-| Video demo? | ✅ Recorded under 3 mins |
-| Uses AI + Voice? | ✅ GPT-4 + ElevenLabs |
-| Supports Scaling? | ✅ Supabase used as backend DB |
-| Solo Builder? | ✅ Built by 1 founder |
-| Purpose-driven story? | ✅ Combats misinformation and bias |
+- **Project Name:** TruthLens  
+- **Built with Bolt.new:** Yes (initial prototype and UI flows built on Bolt)  
+- **Public Demo:** [truthlensai.netlify.app](https://truthlensai.netlify.app)  
+- **Bolt Project URL:** [bolt.new/~/truthlens](https://bolt.new/~/truthlens)  
+- **Video Demo:** [YouTube link](https://youtube.com/yourlink)  
+- **Email used in Bolt.new:** ignacio_zu@outlook.com  
+- **Region:** AMER  
+- **Challenges Applied To:**  
+  - Voice AI Challenge (ElevenLabs integration)  
+  - Deploy Challenge (Netlify full-stack deployment)  
+  - Startup Challenge (Supabase backend and scalability)  
+  - Inspirational Story (solo founder, purpose-driven)  
+  - Most Viral Project (UI/UX for shareability and impact)  
+  - Future Unicorn
 
 ---
 
-## 🔗 Quick Links
+## Vision and Motivation
 
-| Section | Link |
-|--------|------|
-| Live App | [truthlensai.netlify.app](https://truthlensai.netlify.app) |
+In a world where information is abundant but trust is scarce, TruthLens was conceived to restore agency and critical thinking to every digital citizen. The platform is designed not to filter or censor, but to illuminate the hidden layers of language, imagery, and intent that shape our perception of reality. TruthLens is a transparency engine for the age of AI-driven media.
+
+---
+
+## What is TruthLens?
+
+TruthLens is a full-stack AI platform that analyzes news and public content for bias, emotional manipulation, misinformation risk, and synthetic media traces. It empowers users to question, verify, and understand—not just consume—the information that shapes their world.
+
+TruthLens doesn't follow the headlines. It questions them.
+
+---
+
+## What Makes TruthLens Unique?
+
+TruthLens introduces a novel hybrid approach to image authenticity analysis by combining:
+
+- FFT-based spectral analysis to uncover high-frequency artifacts
+- Metadata extraction (EXIF, compression signatures, inconsistencies)
+- Symbolic reasoning via GPT‑4, prompted with structured descriptors derived from visual and forensic input
+
+Unlike prior work that relies solely on learned classifiers, TruthLens emphasizes interpretable, modular, and transparent detection, empowering users to understand why a piece of content may be suspect—not just labeling it as fake or real.
+
+This approach is inspired by recent advances in deepfake detection and multimodal LLM reasoning, but extends them in a unique, integrative way not yet present in the literature.
+
+---
+
+## References & Theoretical Foundation
+
+TruthLens was conceptually inspired by—but does not replicate—the following works:
+
+- Tan et al. (2024) — Frequency-Aware Deepfake Detection via FFT ([arXiv:2403.07240](https://arxiv.org/abs/2403.07240))
+  Motivated the use of high-frequency spectrum analysis in image forensics.
+- Ren et al. (2025) — Can Multimodal LLMs Work as Deepfake Detectors? ([arXiv:2503.20084](https://arxiv.org/abs/2503.20084))
+  Inspired the idea of prompting LLMs with multimodal cues for interpretability.
+- Chakraborty et al. (2025) — TruthLens: A Training-Free Paradigm for DeepFake Detection ([arXiv:2503.15342](https://arxiv.org/abs/2503.15342))
+  Shares name and general vision of explainable detection, but uses a different pipeline (ours integrates FFT, EXIF and GPT‑4 prompting with symbolic inputs).
+
+---
+
+## Why TruthLens for the Hackathon?
+
+TruthLens was created entirely after May 30, 2025, for the Bolt hackathon, with the following structure:
+
+| Requirement                | Met |
+|----------------------------|-----|
+| Uses Bolt.new?             | Yes |
+| Includes Bolt badge?       | Yes |
+| Deployed & Publicly Available? | Yes |
+| Video demo?                | Yes |
+| Uses AI + Voice?           | Yes |
+| Supports Scaling?          | Yes (Supabase backend) |
+| Solo Builder?              | Yes |
+| Purpose-driven story?      | Yes |
+
+---
+
+## Quick Links
+
+| Section    | Link |
+|------------|------|
+| Live App   | [truthlensai.netlify.app](https://truthlensai.netlify.app) |
 | Bolt Project | [bolt.new/~/truthlens](https://bolt.new/~/truthlens) |
 | Demo Video | [YouTube](https://youtube.com/yourlink) |
 
@@ -100,7 +127,7 @@ TruthLens was created **entirely after May 30, 2025** for the Bolt hackathon, wi
 
 ## Project Overview
 
-**TruthLens** is a professional-grade, AI-powered platform designed to empower critical thinking in the digital age. It analyzes news, articles, and public content through multiple advanced lenses—detecting political bias, emotional manipulation, misinformation risk, and synthetic media traces. TruthLens is not a censorship tool, but a transparency and awareness engine for the modern reader.
+TruthLens is a professional-grade, AI-powered platform designed to empower critical thinking in the digital age. It analyzes news, articles, and public content through multiple advanced lenses—detecting political bias, emotional manipulation, misinformation risk, and synthetic media traces. TruthLens is not a censorship tool, but a transparency and awareness engine for the modern reader.
 
 ---
 
@@ -141,13 +168,13 @@ TruthLens/
 
 | Feature                 | Description                                                              |
 | ----------------------- | ------------------------------------------------------------------------ |
-| **Fake News Score**     | Estimates the presence of speculative or unverified claims.              |
-| **Political Bias Detection** | Identifies ideological framing (left / right / neutral).                 |
-| **Emotional Language Analysis** | Highlights manipulative or emotionally charged wording.                  |
-| **AI-Generated Text Detection** | Assesses whether the writing was produced by an LLM.                     |
-| **Image Forensics**     | Detects AI-generated or manipulated visual content.                      |
-| **Translator Pro**      | Translates tone, style, and intent—not just words—across 50+ languages.  |
-| **TruthLens Assistant** | A multilingual, RAG-powered assistant that reads documents and answers questions. |
+| Fake News Score         | Estimates the presence of speculative or unverified claims.              |
+| Political Bias Detection| Identifies ideological framing (left / right / neutral).                 |
+| Emotional Language Analysis | Highlights manipulative or emotionally charged wording.              |
+| AI-Generated Text Detection | Assesses whether the writing was produced by an LLM.                 |
+| Image Forensics         | Detects AI-generated or manipulated visual content.                      |
+| Translator Pro          | Translates tone, style, and intent—not just words—across 30+ languages.  |
+| TruthLens Assistant     | A multilingual, RAG-powered assistant that reads documents and answers questions. |
 
 ---
 
@@ -155,21 +182,21 @@ TruthLens/
 
 | Area          | Technologies                                                                  |
 | ------------- | ----------------------------------------------------------------------------- |
-| **Frontend**  | Vue 3 (Composition API), Vite, Tailwind CSS, TypeScript                       |
-| **Backend**   | FastAPI, Python 3.10+, Pydantic, Uvicorn                                      |
-| **AI & APIs** | OpenAI GPT-4, ElevenLabs (Voice Synthesis), Serper (Web Search)               |
-| **Deployment**| Netlify (Frontend), Railway (Backend)                                         |
+| Frontend      | Vue 3 (Composition API), Vite, Tailwind CSS, TypeScript                       |
+| Backend       | FastAPI, Python 3.10+, Pydantic, Uvicorn, Supabase                            |
+| AI & APIs     | OpenAI GPT-4, ElevenLabs (Voice Synthesis), Serper (Web Search)               |
+| Deployment    | Netlify (Frontend), Railway (Backend)                                         |
 
 ---
 
 ## Security
 
 TruthLens implements robust security measures:
-- **CORS Policy:** Backend only accepts requests from trusted domains.
-- **Rate Limiting:** API is protected against abuse and DoS attacks.
-- **Secret Management:** All API keys are loaded via environment variables and never exposed in code.
-- **Production Hardening:** API documentation endpoints are disabled in production.
-- **Input Validation:** All user input is validated and sanitized.
+- CORS Policy: Backend only accepts requests from trusted domains.
+- Rate Limiting: API is protected against abuse and DoS attacks.
+- Secret Management: All API keys are loaded via environment variables and never exposed in code.
+- Production Hardening: API documentation endpoints are disabled in production.
+- Input Validation: All user input is validated and sanitized.
 
 ---
 
@@ -207,23 +234,20 @@ Create a `.env` file inside the `backend` directory. Git is configured to ignore
 
 `backend/.env`:
 ```env
-# Required for core functionality
 OPENAI_API_KEY="your_openai_key_here"
-# Required for web search
 SERPER_API_KEY="your_serper_key_here"
-# Required for voice translation
 ELEVENLABS_API_KEY="your_elevenlabs_key_here"
 ```
 
 ### 5. Run the Application
 You'll need two separate terminals.
 
-- **Terminal 1: Run the Backend**
+- Terminal 1: Run the Backend
   ```bash
   # From the 'backend' directory
   uvicorn main:app --reload
   ```
-- **Terminal 2: Run the Frontend**
+- Terminal 2: Run the Frontend
   ```bash
   # From the 'frontend' directory
   npm run dev
@@ -234,48 +258,37 @@ The application should now be available at `http://localhost:5173`.
 
 ## Configuration
 
-- **Backend:** All settings are managed via environment variables (see `.env`). Key variables: `OPENAI_API_KEY`, `ELEVENLABS_API_KEY`, `SERPER_API_KEY`, etc. Use `.env` for local development. Never commit secrets.
-- **Frontend:** Centralized config for API URLs, environment, chat settings, etc. Uses `VITE_` prefixed variables in `.env`.
+- Backend: All settings are managed via environment variables (see `.env`). Key variables: `OPENAI_API_KEY`, `ELEVENLABS_API_KEY`, `SERPER_API_KEY`, etc. Use `.env` for local development. Never commit secrets.
+- Frontend: Centralized config for API URLs, environment, chat settings, etc. Uses `VITE_` prefixed variables in `.env`.
 
 ---
 
 ## Main Flows
 
-### 1. Text Analysis
-- Analyze articles for bias, emotional tone, credibility, and factual consistency.
-- Uses OpenAI models and DOCA criteria for structured reports.
-
-### 2. Image Analysis
-- Upload images to detect AI-generation, deepfakes, and manipulation.
-- Provides confidence scores and breakdowns.
-
-### 3. Translator Pro
-- Translate with context and tone preservation.
-- Across languages, multiple translation styles (literal, idiomatic, technical, etc.).
-
-### 4. ChatBot & Voice Assistant
-- Chat with "Clara" for fact-checking, bias detection, and source verification.
-- Voice chat powered by ElevenLabs and OpenAI.
+1. **Text Analysis**: Analyze articles for bias, emotional tone, credibility, and factual consistency. Uses OpenAI models and DOCA criteria for structured reports.
+2. **Image Analysis**: Upload images to detect AI-generation, deepfakes, and manipulation. Provides confidence scores and breakdowns.
+3. **Translator Pro**: Translate with context and tone preservation. Multiple translation styles (literal, idiomatic, technical, etc.).
+4. **ChatBot & Voice Assistant**: Chat with "Clara" for fact-checking, bias detection, and source verification. Voice chat powered by ElevenLabs and OpenAI.
 
 ---
 
 ## Development Best Practices
 
-- **Centralize configuration:** Use the config modules for all environment and API settings.
-- **Type safety:** Use TypeScript (frontend) and Pydantic (backend) for all data models.
-- **Separation of concerns:** Keep logic in services/composables, UI in components/views.
-- **Error handling:** Use global exception handlers (see `main.py`) and user-friendly frontend messages.
-- **Rate limiting:** Enabled via SlowAPI to prevent abuse.
-- **Security:** Never expose secrets. Use CORS and validate all inputs.
-- **Testing:** Place backend tests in `backend/app/tests/`. Use composables and unit tests for frontend logic.
-- **Documentation:** Update this README and inline docstrings/comments for all major changes.
+- Centralize configuration: Use the config modules for all environment and API settings.
+- Type safety: Use TypeScript (frontend) and Pydantic (backend) for all data models.
+- Separation of concerns: Keep logic in services/composables, UI in components/views.
+- Error handling: Use global exception handlers (see `main.py`) and user-friendly frontend messages.
+- Rate limiting: Enabled via SlowAPI to prevent abuse.
+- Security: Never expose secrets. Use CORS and validate all inputs.
+- Testing: Place backend tests in `backend/app/tests/`. Use composables and unit tests for frontend logic.
+- Documentation: Update this README and inline docstrings/comments for all major changes.
 
 ---
 
 ## Testing
 
-- **Backend:** Use pytest or unittest. Place tests in `backend/app/tests/`.
-- **Frontend:** Use Vue Test Utils and Jest/Vitest for components and composables.
+- Backend: Use pytest or unittest. Place tests in `backend/app/tests/`.
+- Frontend: Use Vue Test Utils and Jest/Vitest for components and composables.
 
 ---
 
@@ -290,11 +303,11 @@ The application should now be available at `http://localhost:5173`.
 
 ## Deployment & Production
 
-- **Production:** Set `ENV=production` and use secure, production-ready values in `.env`.
-- **API keys:** Use environment variables and secret managers in deployment.
-- **CORS:** Restrict origins in production.
-- **Static files:** Served via backend for audio and analysis results.
-- **Deployment:** Can be deployed on any cloud supporting Python and Node.js (e.g., Railway, Netlify, Vercel).
+- Production: Set `ENV=production` and use secure, production-ready values in `.env`.
+- API keys: Use environment variables and secret managers in deployment.
+- CORS: Restrict origins in production.
+- Static files: Served via backend for audio and analysis results.
+- Deployment: Can be deployed on any cloud supporting Python and Node.js (e.g., Railway, Netlify, Vercel).
 
 ---
 

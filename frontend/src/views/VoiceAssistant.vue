@@ -121,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import listenStartSound from '../assets/sounds/listen_start.wav';
 import speakStartSound from '../assets/sounds/speak_start.mp3';
 import ChatBot from '../components/ChatBot.vue';
@@ -130,7 +130,7 @@ import { useAudioOptimization } from '../composables/useAudioOptimization';
 import { useMobileDetection } from '../composables/useMobileDetection';
 
 // Audio optimization
-const { isMobile: isMobileAudio, getMobileAudioConstraints, playAudio, resumeAudioContext } = useAudioOptimization();
+const { isMobile: isMobileAudio, getMobileAudioConstraints, resumeAudioContext } = useAudioOptimization();
 
 // Mobile detection for ChatBot visibility
 const { isMobile: isMobileDevice } = useMobileDetection();
@@ -150,9 +150,48 @@ const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
 const agentId = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
 let conversation: Conversation | null = null;
 
+// Audio management to prevent duplicates
+let currentAudio: HTMLAudioElement | null = null;
+
 // Touch handling for mobile
 let touchStartTime = 0;
 let touchTimer: number | null = null;
+
+// Improved audio playback to prevent duplicates
+const playAudioSafely = (src: string, options?: { volume?: number }) => {
+  try {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+    currentAudio = new Audio(src);
+    const volume = options?.volume ?? (isMobileAudio ? 0.3 : 0.5);
+    currentAudio.volume = volume;
+    currentAudio.addEventListener('ended', () => {
+      currentAudio = null;
+    });
+    currentAudio.play().catch(e => {
+      console.warn('Audio play failed:', e);
+      currentAudio = null;
+    });
+  } catch (error) {
+    console.error('Error playing audio:', error);
+    currentAudio = null;
+  }
+};
+
+// Safe conversation cleanup to prevent WebSocket errors
+const safeEndConversation = async () => {
+  if (conversation) {
+    try {
+      await conversation.endSession();
+    } catch (error) {
+      console.warn('Error ending conversation (may already be closed):', error);
+    } finally {
+      conversation = null;
+    }
+  }
+};
 
 // Computed properties
 const getButtonLabel = () => {
@@ -208,9 +247,9 @@ const initializeVoice = async (): Promise<boolean> => {
         
         // Play connection sound
         if (isMobileAudio) {
-          playAudio(listenStartSound, { volume: 0.3 });
+          playAudioSafely(listenStartSound, { volume: 0.3 });
         } else {
-          playAudio(listenStartSound, { volume: 0.5 });
+          playAudioSafely(listenStartSound, { volume: 0.5 });
         }
       },
       onDisconnect: () => {
@@ -231,7 +270,7 @@ const initializeVoice = async (): Promise<boolean> => {
           isSpeaking.value = true;
           isListening.value = false;
           // Play speak start sound with mobile optimization
-          playAudio(speakStartSound, { volume: isMobileAudio ? 0.3 : 0.5 });
+          playAudioSafely(speakStartSound, { volume: isMobileAudio ? 0.3 : 0.5 });
         } else if (mode.mode === 'listening') {
           isSpeaking.value = false;
           if (isAlwaysListening.value) {
@@ -258,20 +297,15 @@ const toggleVoiceChat = async () => {
     await requestPermissions();
     return;
   }
-
   if (!conversation) {
     const success = await initializeVoice();
     if (!success) return;
   }
-
   if (isAlwaysListening.value && conversation) {
-    // Stop the conversation
-    await conversation.endSession();
-    conversation = null;
+    await safeEndConversation();
     isAlwaysListening.value = false;
     isActive.value = false;
   } else {
-    // Start the conversation
     isActive.value = true;
     isAlwaysListening.value = true;
   }
@@ -303,18 +337,12 @@ const handleTouchEnd = async (e: TouchEvent) => {
     clearTimeout(touchTimer);
     touchTimer = null;
   }
-  
   const touchDuration = Date.now() - touchStartTime;
-  
-  // If it was a quick tap and we're in always listening mode, toggle off
   if (touchDuration < 200 && isAlwaysListening.value && conversation) {
-    await conversation.endSession();
-    conversation = null;
+    await safeEndConversation();
     isAlwaysListening.value = false;
     isActive.value = false;
-  }
-  // If it was a longer press and we're not in always listening, start conversation
-  else if (touchDuration >= 200 && !isAlwaysListening.value) {
+  } else if (touchDuration >= 200 && !isAlwaysListening.value) {
     await toggleVoiceChat();
   }
 };
@@ -329,8 +357,7 @@ const handleMouseDown = () => {
 const handleMouseUp = async () => {
   if (!isMobileAudio && !isAlwaysListening.value && !isConnecting.value && isActive.value && conversation) {
     isActive.value = false;
-    await conversation.endSession();
-    conversation = null;
+    await safeEndConversation();
   }
 };
 
@@ -343,10 +370,8 @@ const handleError = (message: string) => {
   isSpeaking.value = false;
   isAlwaysListening.value = false;
   isActive.value = false;
-  
   if (conversation) {
-    conversation.endSession();
-    conversation = null;
+    safeEndConversation();
   }
 };
 
@@ -377,23 +402,15 @@ onUnmounted(async () => {
     clearTimeout(touchTimer);
   }
   
+  // Stop any playing audio
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  
   if (conversation) {
-    await conversation.endSession();
-    conversation = null;
-  }
-});
-
-// Watch to play sounds when state changes
-watch(isListening, (newVal, oldVal) => {
-  console.log('isListening changed:', oldVal, '->', newVal);
-  if (newVal && !oldVal && !isConnecting.value) {
-    playAudio(listenStartSound, { volume: isMobileAudio ? 0.3 : 0.5 });
-  }
-});
-
-watch(isSpeaking, (newVal, oldVal) => {
-  if (newVal && !oldVal) {
-    playAudio(speakStartSound, { volume: isMobileAudio ? 0.3 : 0.5 });
+    await safeEndConversation();
   }
 });
 </script>

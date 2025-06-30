@@ -580,7 +580,7 @@ onUnmounted(() => {
         <ul class="list-disc list-inside text-slate-300 mb-3 text-base">
           <li>Translate articles, quotes, and documents</li>
           <li>Preserve context, tone, and intended meaning</li>
-          <li>Instantly switch between 50+ languages</li>
+          <li>Instantly switch between 30+ languages</li>
         </ul>
         <p class="text-slate-200 text-base">Empower your research and fact-checking with advanced, context-aware translation.</p>
       </div>
