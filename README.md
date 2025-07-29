@@ -332,5 +332,5 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 **Ignacio Zúñiga Navarro**  
 ML Engineer & AI Builder  
-GitHub: [ignacioz-ai](https://github.com/ignacioz-ai)  
+GitHub: [ignacioz-ai](https://github.com/ign24)  
 Contact: ignacio_zu@outlook.com
