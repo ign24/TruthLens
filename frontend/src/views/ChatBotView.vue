@@ -147,13 +147,13 @@
           </svg>
           <h2 class="text-xl sm:text-2xl font-bold text-white">TruthLens Assistant</h2>
         </div>
-        <p class="text-slate-200 mb-3">Use this interactive space to chat directly with Clara. You can ask:</p>
+        <p class="text-slate-200 mb-3">Use this interactive space to chat directly with the TruthLens Assistant. You can ask:</p>
         <ul class="list-disc list-inside text-slate-300 mb-3">
           <li>"Is this article biased?"</li>
           <li>"Was this image manipulated?"</li>
           <li>"Can you verify the source of this post?"</li>
         </ul>
-        <p class="text-slate-200">Clara will deliver immediate and structured analysis using cutting-edge AI — empowering you to think for yourself.</p>
+        <p class="text-slate-200">TruthLens chat assistant will deliver immediate and structured analysis using cutting-edge AI — empowering you to think for yourself.</p>
         <ul class="list-disc list-inside text-slate-400 mt-4 text-sm bg-slate-800/80 rounded-xl p-4 shadow-lg border border-cyan-400/20">
           <li class="flex items-center gap-3 mb-2">
             <button class="btn-inset flex items-center justify-center w-10 h-10 bg-slate-800 border border-cyan-400/40 rounded-lg mr-2 opacity-90 shadow-md">

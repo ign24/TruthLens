@@ -8,6 +8,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from app.core.config import settings
 from app.api.routes import analyze, chat, translator
+from app.api.routes.security import router as security_router
 import logging
 import os
 from fastapi import WebSocket
@@ -117,7 +118,8 @@ def create_app() -> FastAPI:
             "docs": "/docs",
             "endpoints": {
                 "analyze": f"{settings.API_V1_STR}/analyze",
-                "chat": f"{settings.API_V1_STR}/chat"
+                "chat": f"{settings.API_V1_STR}/chat",
+                "security_stats": "/api/security/stats"
                 # "health": f"{settings.API_V1_STR}/health"  # Health check disabled to save tokens
             }
         }
@@ -153,6 +155,7 @@ def create_app() -> FastAPI:
     app.include_router(chat.router, prefix=settings.API_V1_STR, tags=["chat"])
     app.include_router(translator.router, prefix=settings.API_V1_STR, tags=["translator"])
     app.include_router(image_analysis.router, prefix="/api", tags=["image-analysis"])
+    app.include_router(security_router, prefix="/api", tags=["security"])
 
     # Voice WebSocket endpoint
     @app.websocket("/ws/voice")

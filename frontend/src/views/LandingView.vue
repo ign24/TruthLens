@@ -173,24 +173,6 @@
               </RouterLink>
             </div>
           </div>
-
-          <!-- Connect Section -->
-          <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-white">Connect</h3>
-            <div class="space-y-3">
-              <a 
-                :href="getBoltUrl()" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                class="flex items-center gap-3 text-slate-300 hover:text-cyan-400 transition-colors group"
-              >
-                <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <span>Built with Bolt</span>
-              </a>
-            </div>
-          </div>
         </div>
 
         <!-- Credits Section -->
@@ -219,7 +201,6 @@
 import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { FRONTEND_URL } from '../config/api';
-import { getBoltUrl } from '../config/environment';
 
 const featuresSection = ref<HTMLElement | null>(null);
 

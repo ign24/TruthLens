@@ -47,6 +47,31 @@ class OpenAIService:
         )
         self.model = settings.OPENAI_MODEL
         self.storage = StorageService()
+        self.max_tokens_per_request = settings.MAX_TOKENS_PER_REQUEST
+
+    def _estimate_tokens(self, text: str) -> int:
+        """
+        Estimar tokens basado en longitud del texto
+        Aproximación: 1 token ≈ 4 caracteres para texto en inglés/español
+        """
+        return len(text) // 4
+
+    def _validate_input_size(self, text: str, max_tokens: int = 8000) -> bool:
+        """
+        Validar que el texto no exceda el límite de tokens
+        
+        Args:
+            text: Texto a validar
+            max_tokens: Límite máximo de tokens
+            
+        Returns:
+            bool: True si está dentro del límite
+        """
+        estimated_tokens = self._estimate_tokens(text)
+        if estimated_tokens > max_tokens:
+            logger.warning(f"Text too long: estimated {estimated_tokens} tokens, max {max_tokens}")
+            return False
+        return True
 
     async def analyze_text(
         self,
@@ -54,6 +79,10 @@ class OpenAIService:
         url: Optional[str] = None,
         title: Optional[str] = None
     ) -> AnalysisResponse:
+        # Validar tamaño de entrada
+        if not self._validate_input_size(text, max_tokens=8000):
+            raise ValueError(f"Text too long. Maximum 8000 tokens allowed. Estimated tokens: {self._estimate_tokens(text)}")
+        
         # Prepare the prompt
         prompt = get_analysis_prompt(text, url, title)
 
@@ -65,7 +94,7 @@ class OpenAIService:
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=4000,
+            max_tokens=min(4000, self.max_tokens_per_request),
             response_format={ "type": "json_object" }
         )
 
@@ -137,6 +166,18 @@ class OpenAIService:
     ) -> Dict[str, Any]:
         """Chat with the model about an article and its analysis."""
         try:
+            # Validar tamaño total de la conversación
+            total_text = ""
+            for msg in messages:
+                if hasattr(msg, 'content'):
+                    total_text += msg.content + " "
+            
+            if article_text:
+                total_text += article_text + " "
+            
+            if not self._validate_input_size(total_text, max_tokens=6000):
+                raise ValueError(f"Conversation too long. Maximum 6000 tokens allowed. Estimated tokens: {self._validate_input_size(total_text)}")
+            
             # Get current article from storage
             current_article = self.storage.get_current_article()
             
@@ -193,7 +234,7 @@ class OpenAIService:
                 model=self.model,
                 messages=full_messages,
                 temperature=0.2,
-                max_tokens=2000
+                max_tokens=min(2000, self.max_tokens_per_request)
             )
 
             return {
@@ -229,7 +270,7 @@ class OpenAIService:
                         ]
                     }
                 ],
-                max_tokens=1500,
+                max_tokens=min(1500, self.max_tokens_per_request),
                 response_format={"type": "json_object"}
             )
             logger.error(f"[ImageAnalysis] Respuesta cruda de OpenAI: {response.choices[0].message.content!r}")

@@ -107,6 +107,7 @@
         </div>
         <p class="text-slate-200 mb-3 text-base">Clara is the voice of TruthLens — your companion for exploring the platform and making sense of what you see.</p>
         <ul class="list-disc list-inside text-slate-300 mb-3 text-base space-y-1">
+          <li>Ask the assistant to speak in your preferred language</li>
           <li>Understand how bias, emotional tone, and manipulation appear in language</li>
           <li>Uncover the 'why' behind each analysis tool and its findings</li>
           <li>Develop a more critical perspective on media and language</li>
@@ -189,6 +190,12 @@ const safeEndConversation = async () => {
       console.warn('Error ending conversation (may already be closed):', error);
     } finally {
       conversation = null;
+      // Reset all states to prevent conflicts
+      isListening.value = false;
+      isSpeaking.value = false;
+      isConnecting.value = false;
+      isAlwaysListening.value = false;
+      isActive.value = false;
     }
   }
 };
@@ -223,6 +230,11 @@ const initializeVoice = async (): Promise<boolean> => {
   try {
     if (!apiKey || !agentId) {
       throw new Error('Missing ElevenLabs API key or Agent ID');
+    }
+
+    // Prevent multiple initializations
+    if (conversation || isConnecting.value) {
+      return true;
     }
 
     // Resume audio context for mobile
@@ -342,7 +354,7 @@ const handleTouchEnd = async (e: TouchEvent) => {
     await safeEndConversation();
     isAlwaysListening.value = false;
     isActive.value = false;
-  } else if (touchDuration >= 200 && !isAlwaysListening.value) {
+  } else if (touchDuration >= 200 && !isAlwaysListening.value && !conversation && !isConnecting.value) {
     await toggleVoiceChat();
   }
 };

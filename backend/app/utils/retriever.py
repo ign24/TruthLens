@@ -33,7 +33,7 @@ def search_web(query: str, num_results: int = 5) -> List[Dict[str, str]]:
     }
     payload = {
         "q": query,
-        "num": num_results
+        "num": num_results,
     }
 
     try:
